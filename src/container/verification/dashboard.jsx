@@ -218,7 +218,7 @@ function VerificationDashboard() {
           <Card className="custom-card">
             <Card.Body>
               <h6 className="fw-semibold">Verification Statistics</h6>
-              <Revenueanalytics /> {/* Placeholder for the actual graph */}
+              {/* <Revenueanalytics />  */}
             </Card.Body>
           </Card>
         </Col>

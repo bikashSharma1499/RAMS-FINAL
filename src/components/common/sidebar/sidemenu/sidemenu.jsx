@@ -20,6 +20,30 @@ export const MENUITEMS = [
   {
     menutitle: "Main Navigation",
     Items: [
+
+      {
+        icon: (<i className="bx bx-file-blank side-menu__icon"></i>),
+        type: "sub",
+        Name: '',
+        active: false,
+        selected: false,
+        title: "Customer",
+        badge: '',
+        badgetxt: 'New',
+        class: ' badge bg-secondary-transparent ms-2',
+        children: [
+          {
+            path: `${import.meta.env.BASE_URL}customer/list`,
+            title: "List",
+            type: "link",
+            active: false,
+            selected: false,
+          },
+     
+          
+        ],
+      },
+
       {
         icon: (<i className="bx bx-file-blank side-menu__icon"></i>),
         type: "sub",

@@ -29,7 +29,7 @@ function PropertyBasicDetails({ goToStep }) {
   const [addressDetails, setAddressDetails] = useState(initialState);
   const inputRef = useRef(null);
   const [selectedHousingCode, setSelectedHousingCode] = useState("");
-  
+  const [isLoading, SetIsLoading]= useState(false);
  useEffect(() => {
   const fetchPropertyData = async () => {
     try {
@@ -266,6 +266,8 @@ function PropertyBasicDetails({ goToStep }) {
   };
   const handleSubmit = async () => {
     
+    SetIsLoading(true);
+
     if (!addressDetails) {
       alert("Please fill in all fields");
       return;
@@ -341,6 +343,7 @@ function PropertyBasicDetails({ goToStep }) {
         console.error("Unexpected Error:", error.message);
       }
     }
+    SetIsLoading(false);
   };
   return (
     <div>
@@ -423,7 +426,11 @@ function PropertyBasicDetails({ goToStep }) {
         <Row>
           <Col>
             <Button className=" float-end mt-4" onClick={handleSubmit}>
-              Submit
+            {isLoading ? (
+              "Processing"
+            ): (
+             "Save"
+            ) }   
             </Button>
           </Col>
         </Row>

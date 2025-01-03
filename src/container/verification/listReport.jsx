@@ -2,6 +2,7 @@ import React from "react";
 import { Button, Badge } from "react-bootstrap";
 import Pageheader from "../../components/pageheader/pageheader";
 import DataTable from "react-data-table-component";
+import ErrorBoundary from "./ErrorBoundary"; // Import the ErrorBoundary
 
 // Sample data for the table
 const data = [
@@ -104,7 +105,7 @@ const handleWithdraw = (verificationId) => {
   // You can integrate the withdrawal action logic here
 };
 
-function VerificationListReport() {
+function VerificationListData() {
   return (
     <>
       <Pageheader title="New Verification" heading="Verification" active="New Verification" />
@@ -139,6 +140,15 @@ function VerificationListReport() {
         </div>
       </div>
     </>
+  );
+}
+
+// Wrap the VerificationListReport component inside the ErrorBoundary
+function VerificationListReport() {
+  return (
+    <ErrorBoundary>
+      <VerificationListData />
+    </ErrorBoundary>
   );
 }
 

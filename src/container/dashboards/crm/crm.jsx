@@ -10,17 +10,29 @@ function Crm() {
 
   const navigate = useNavigate();
   const [userData, setUserData] = useState("");
-  useEffect( async ()=>{
-    const user= await GetLoginInfo();
-    if(user){
-      setUserData(user);
-    }
-  },[])
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const user = await GetLoginInfo();
+        if (user) {
+          setUserData(user);
+        }
+      } catch (error) {
+        console.error("Error fetching login info:", error);
+      } finally {
+        setLoading(false); // Set loading to false once done
+      }
+    };
+  
+    fetchUserData();
+  }, []);
 
   const handleNavigate=(type)=>{
     switch(type){
       case "Property":
-        navigate(`${import.meta.env.BASE_URL}auth/signin/`);
+        navigate(`${import.meta.env.BASE_URL}property/listing/`);
         break;
       case "Verification":
         navigate(`${import.meta.env.BASE_URL}verification/new/`);
@@ -274,7 +286,7 @@ function Crm() {
           <Card className="custom-card">
             <Card.Body>
               <h6 className="fw-semibold">Verification Statistics</h6>
-              <Revenueanalytics /> {/* Placeholder for the actual graph */}
+              {/* <Revenueanalytics />  */}
             </Card.Body>
           </Card>
         </Col>

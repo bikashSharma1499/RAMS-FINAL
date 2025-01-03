@@ -21,6 +21,8 @@ export const API_ENDPOINTS = {
   customerPropertyUpdateMaintenance: BASE_URL+"Customer/CustomerPropertyMaintenance",
   agreementContractDetails: BASE_URL+"Customer/RentContract", 
   agreementListDisplay: BASE_URL+"Customer/RentAgreementEntryList",
+  agreementPricing : BASE_URL +"Service/ComponentPriceList",
+
   propertyList:BASE_URL+"Customer/CustomerPropertyList",
   ManageProperty:BASE_URL+"Customer/CustomerProperty",
   PropertyRental:BASE_URL+"Customer/CustomerPropertyRate",
@@ -36,5 +38,11 @@ export const API_ENDPOINTS = {
   serviceAddress: BASE_URL+"Service/VerificationAddress",
   serviceAddressDisplay: BASE_URL+"Service/VerificationAddressDisplay",
   serviceCriminal :BASE_URL+"Service/VerificationCriminal",
-  serviceCrimialList:BASE_URL+"Service/VerificationCriminalDisplay"
+  serviceCrimialList:BASE_URL+"Service/VerificationCriminalDisplay",
+
+  customerList:BASE_URL+"User/CustomerList",
+  CustomerNewRegistration:BASE_URL+"User/CustomerRegistration",
+  Customerdata:BASE_URL+"User/CustomerSelfList",
+  UpdateCustomerStatus:BASE_URL+"User/CustomerAuthentication",
+
 };

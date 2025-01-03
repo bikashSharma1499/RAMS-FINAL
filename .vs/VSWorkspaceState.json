@@ -6,11 +6,7 @@
     "\\src\\assets\\icon-fonts",
     "\\src\\assets\\icon-fonts\\bootstrap-icons",
     "\\src\\assets\\icon-fonts\\bootstrap-icons\\icons",
-    "\\src\\container",
-    "\\src\\container\\authentication",
-    "\\src\\container\\authentication\\signup",
-    "\\src\\container\\authentication\\signup\\signupbasic"
+    "\\src\\container"
   ],
-  "SelectedNode": "\\src\\apiConfig.jsx",
   "PreviewInSolutionExplorer": false
 }

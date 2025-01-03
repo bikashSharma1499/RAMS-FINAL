@@ -12,6 +12,7 @@ import Pageheader from "../../components/pageheader/pageheader";
 function PropertyListData() {
     const [data, setData] = useState([]);
     const [loading, setLoading] = useState(false);
+    const [showTenant, setShowTenenat]= useState(false);
     const navigate = useNavigate();
 
     const handleRentCollection = (property_code) => {
@@ -124,7 +125,7 @@ function PropertyListData() {
             style: {
                 fontWeight: "bold",
                 fontSize: "14px",
-            },
+            }, 
         },
         cells: {
             style: {
@@ -135,7 +136,7 @@ function PropertyListData() {
 
     return (
         <>
-            <Pageheader title="Payment History" heading="Payments" active="Payment History" />
+            <Pageheader title="Transaction" heading="Property" active="Transaction" />
 
             <Card className="property-card">
                 <Card.Body>

@@ -5,10 +5,10 @@ import { API_ENDPOINTS } from "../../utils/apiConfig";
 import { GetLoginInfo } from "../auth/logindata";
 
 const AgreementEntryList = () => {
-  const [dataList, setDataList] = useState([]);
-  const [filteredDataList, setFilteredDataList] = useState([]);
-  const [loadingList, setLoadingList] = useState(false);
-  const [searchList, setSearchList] = useState("");
+ const [dataList, setDataList] = useState([]);
+ const [filteredDataList, setFilteredDataList] = useState([]);
+ const [loadingList, setLoadingList] = useState(false);
+ const [searchList, setSearchList] = useState("");
 
   // Fetch data from the API
   const fetchData = async () => {
@@ -135,6 +135,7 @@ const AgreementEntryList = () => {
         progressPending={loadingList}
         pagination
         responsive
+        allowOverflow={true} 
         fixedHeader
         highlightOnHover
         striped

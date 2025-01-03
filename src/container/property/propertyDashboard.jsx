@@ -184,9 +184,9 @@ function PropertyDashboard() {
               </Dropdown>
             </Card.Header>
             <Card.Body>
-              <div id="crm-revenue-analytics">
+              {/* <div id="crm-revenue-analytics">
                 <Revenueanalytics />
-              </div>
+              </div> */}
             </Card.Body>
           </Card>
         </Col>

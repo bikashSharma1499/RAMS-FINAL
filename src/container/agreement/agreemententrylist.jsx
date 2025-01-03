@@ -10,25 +10,30 @@ const AgreementEntryList = () => {
   const [filteredDataList, setFilteredDataList] = useState([]);
   const [loadingList, setLoadingList] = useState(false);
   const [searchList, setSearchList] = useState("");
+  const [error, setError] = useState(null); // State for error messages
   const navigate = useNavigate(); // For navigation when Continue button is clicked
 
   // Fetch data from the API
   const fetchData = async () => {
     setLoadingList(true);
+    setError(null); // Reset error on each fetch attempt
     try {
       const user = GetLoginInfo();
       if (!user || !user.userKey) {
         throw new Error("User information is not available");
       }
+
       const response = await axios.post(API_ENDPOINTS.agreementListDisplay, {
         customerCode: user.userKey,
       });
 
       const fetchedData = response.data || [];
+      const filteredData = fetchedData.filter((item) => item.agreement_status === "Pending");
+
       setDataList(fetchedData);
-      // Initially filter data where agreement_status is "Pending"
-      setFilteredDataList(fetchedData.filter((item) => item.agreement_status === "Pending"));
+      setFilteredDataList(filteredData);
     } catch (error) {
+      setError("Error fetching data. Please try again later.");
       console.error("Error fetching data:", error.message);
     } finally {
       setLoadingList(false);
@@ -40,22 +45,25 @@ const AgreementEntryList = () => {
     fetchData();
   }, []);
 
-  // Filter data based on search input and agreement_status
+  // Debounce the search input to prevent unnecessary re-renders
   useEffect(() => {
-    const lowercasedSearch = searchList.toLowerCase();
-    const filtered = dataList
-      .filter((item) => item.agreement_status === "Pending") // Only include rows with agreement_status = "Pending"
-      .filter((item) =>
-        Object.values(item).some((value) =>
-          String(value).toLowerCase().includes(lowercasedSearch)
-        )
-      );
-    setFilteredDataList(filtered);
+    const timer = setTimeout(() => {
+      const lowercasedSearch = searchList.toLowerCase();
+      const filtered = dataList
+        .filter((item) => item.agreement_status === "Pending")
+        .filter((item) =>
+          Object.values(item).some((value) =>
+            String(value).toLowerCase().includes(lowercasedSearch)
+          )
+        );
+      setFilteredDataList(filtered);
+    }, 300); // 300ms debounce delay
+
+    return () => clearTimeout(timer); // Cleanup timeout on re-render
   }, [searchList, dataList]);
 
   // Handle Continue button click
   const handleContinue = (agreementId) => {
-    // Navigate to a new page or perform some action using the agreementId
     console.log("Continue clicked for agreement ID:", agreementId);
     navigate(`/agreement/details/${agreementId}`);
   };
@@ -102,8 +110,10 @@ const AgreementEntryList = () => {
 
   return (
     <div style={{ padding: "20px" }}>
+      {error && <div className="alert alert-danger">{error}</div>} {/* Display error message */}
+      
       <div className="d-flex justify-content-between">
-         <div className="search-box" style={{ marginBottom: "20px" }}>
+        <div className="search-box" style={{ marginBottom: "20px" }}>
           <input
             type="text"
             className="form-control"
@@ -120,6 +130,7 @@ const AgreementEntryList = () => {
         data={filteredDataList}
         progressPending={loadingList}
         pagination
+        allowOverflow={true} 
         responsive
         fixedHeader
         highlightOnHover

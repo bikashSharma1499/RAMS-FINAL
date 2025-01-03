@@ -329,7 +329,7 @@ function NewAgreement() {
                       <i className=" bi-plus-circle"></i> New Agreement{" "}
                     </Button>
                   </div>
-             <AgreementEntryList />
+             {/* <AgreementEntryList /> */}
     
                 </>
               )}

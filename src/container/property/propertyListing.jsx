@@ -44,7 +44,18 @@ function PropertyListing() {
            
           //#region Triggering Condition for Update / Insert
          
+          const checkProcess = localStorage.getItem("prop_process");
+          const processData = JSON.parse(checkProcess);
+          if (!processData || ( processData.process_p==='0' && processData.actual_p=='U' ) ) {
+            const data = {
+              inital_p: "I",
+              actual_p: "I",
+              process_p: "0",
+              process_r:"0"
+            };
           
+            localStorage.setItem('prop_process', JSON.stringify(data)); 
+          }
           //#endregion
 
           setTimeout(() => {

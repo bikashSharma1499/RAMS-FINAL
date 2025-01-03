@@ -24,6 +24,10 @@ import PropertyListing from './container/property/propertyListing.jsx';
 import PropertyDashboard from './container/property/propertyDashboard.jsx'
 import PropertyTransaction from './container/property/propertyTransaction.jsx';
 
+/*Customer */
+
+import Customerlist from './container/customer/customerlist.jsx';
+import CustomerNewRegistration from './container/customer/customerregistration.jsx';
 /**/
 import VerificationForm from './container/verification/newrequest.jsx';
 import VerificationDashboard from './container/verification/dashboard.jsx';
@@ -45,6 +49,8 @@ ReactDOM.createRoot(document.getElementById('root')).render(
           <Route path={`${import.meta.env.BASE_URL}dashboard`} element={<Crm/>} />
           <Route path={`${import.meta.env.BASE_URL}agreement/list`} element={<RentAgreementListAll/>} />
           <Route path={`${import.meta.env.BASE_URL}newagreement/`} element={<NewAgreement/>} />
+          <Route path={`${import.meta.env.BASE_URL}customer/list/`} element={<Customerlist/>} />
+          <Route path={`${import.meta.env.BASE_URL}customer/registration/`} element={<CustomerNewRegistration/>} />
 
           {/*Property Listing*/}
           <Route path={`${import.meta.env.BASE_URL}property/dashboard/`} element= {<PropertyDashboard/>}/>

@@ -1,14 +1,14 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Form, Col, Row, Button } from "react-bootstrap";
 import Select from "react-select";
 import { API_ENDPOINTS } from "../../utils/apiConfig";
-import axios from "axios";
+import axios, { AxiosHeaders } from "axios";
 import { showPopup } from "../../utils/validation";
 
 const RentalDetails = ({ goToStep }) => {
   const navigate = useNavigate();
- 
+
   const [formData, setFormData] = useState({
     i_rent: "",
     i_advamt: "",
@@ -20,16 +20,15 @@ const RentalDetails = ({ goToStep }) => {
     societyFees: 0,
   });
 
-
   const [errors, setErrors] = useState({});
- const[agreementRate, setAgreementRate]=useState(0);
- const[agreementValCode, setAgreementValCode]=useState(0);
+  const [agreementRate, setAgreementRate] = useState(0);
+  const [agreementValCode, setAgreementValCode] = useState(0);
   // Generate options dynamically for rent payment date
   const rentPaymentDateOptions = Array.from({ length: 31 }, (_, i) => ({
     value: i + 1,
     label: i + 1,
   }));
-
+  const [agreementOptions, setAgreementOptions] = useState([]);
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prevData) => ({
@@ -72,8 +71,9 @@ const RentalDetails = ({ goToStep }) => {
     if (!validateForm()) return; // Ensure the form is validated
     const agr = JSON.parse(localStorage.getItem("rg_rcd"));
     // Retrieve maintenanceCodes from localStorage and handle null case
-    const maintenanceCodes = JSON.parse(localStorage.getItem("maintenanceCodes")) || [];
-     debugger; // For debugging during development
+    const maintenanceCodes =
+      JSON.parse(localStorage.getItem("maintenanceCodes")) || [];
+    debugger; // For debugging during development
     // Prepare API payload
     const payload = {
       agreementCode: agr.agr_k || null, // Ensure fallback if `agr` or `agr_k` is undefined
@@ -81,7 +81,7 @@ const RentalDetails = ({ goToStep }) => {
       monthlyPrice: formData?.i_rent || 0, // Provide default values for `formData` properties
       advance: formData?.i_advamt || 0,
       noticePeriod: formData?.i_ntcperiod || 0,
-      paymentDay: formData?.i_rentpaydate || '',
+      paymentDay: formData?.i_rentpaydate || "",
       electricBill: formData?.electricBill || 0,
       waterBill: formData?.waterBill || 0,
       societyBill: formData?.societyFees || 0,
@@ -90,13 +90,19 @@ const RentalDetails = ({ goToStep }) => {
       amount: 200, // Hardcoded value
       transactionId: "EVBEVEVEV", // Hardcoded value
     };
-  
+
     try {
-      const response = await axios.post(API_ENDPOINTS.agreementContractDetails, payload);
-      if(response.status===200){
-        showPopup({title:"Rent Agreement Successfull", msg:"Successfully Submitted. Please Wait while we redirect..",iconType:"success" })
-        localStorage.setItem('next_step',"1");
-    
+      const response = await axios.post(
+        API_ENDPOINTS.agreementContractDetails,
+        payload
+      );
+      if (response.status === 200) {
+        showPopup({
+          title: "Rent Agreement Successfull",
+          msg: "Successfully Submitted. Please Wait while we redirect..",
+          iconType: "success",
+        });
+        localStorage.setItem("next_step", "1");
 
         navigate(`${import.meta.env.BASE_URL}dashboard/`);
       }
@@ -104,7 +110,7 @@ const RentalDetails = ({ goToStep }) => {
       console.error("Error during submission:", error);
     }
   };
-  
+
   const handleNumericInput = (e) => {
     const charCode = e.charCode || e.keyCode;
     if (charCode < 48 || charCode > 57) {
@@ -119,7 +125,33 @@ const RentalDetails = ({ goToStep }) => {
       setAgreementValCode(0);
     }
   };
-  
+
+ 
+  useEffect(() => {
+    const fetchAgreementPrice = async () => {
+      try {
+        const response = await axios.post(API_ENDPOINTS.agreementPricing, {
+          transactionType: "1",
+          serviceCode: 0,
+        });
+
+        if (response.status === 200) {
+          const filteredOptions = response.data.filter(
+            (item) => item.service_type === "Agreement"
+          );
+          setAgreementOptions(filteredOptions);
+        }
+      } catch (error) {
+        console.error("Error fetching agreement options:", error);
+      }
+    };
+
+    fetchAgreementPrice();
+  }, []);
+
+  const handleRadioChange = (event) => {
+    console.log("Selected Agreement Value:", event.target.value);
+  };
 
   return (
     <div>
@@ -132,6 +164,7 @@ const RentalDetails = ({ goToStep }) => {
               <Form.Control
                 name="i_rent"
                 value={formData.i_rent}
+                autoComplete="off"
                 onChange={handleChange}
                 onKeyPress={handleNumericInput}
                 isInvalid={!!errors.i_rent}
@@ -149,6 +182,7 @@ const RentalDetails = ({ goToStep }) => {
                 name="i_advamt"
                 value={formData.i_advamt}
                 onChange={handleChange}
+                autoComplete="off"
                 onKeyDown={handleNumericInput}
                 isInvalid={!!errors.i_advamt}
               />
@@ -164,6 +198,7 @@ const RentalDetails = ({ goToStep }) => {
               <Form.Control
                 name="i_ntcperiod"
                 value={formData.i_ntcperiod}
+                autoComplete="off"
                 onChange={handleChange}
                 onKeyPress={handleNumericInput}
                 isInvalid={!!errors.i_ntcperiod}
@@ -181,6 +216,7 @@ const RentalDetails = ({ goToStep }) => {
                 name="i_rentdur"
                 value={formData.i_rentdur}
                 onChange={handleChange}
+                autoComplete="off"
                 onKeyPress={handleNumericInput}
                 isInvalid={!!errors.i_rentdur}
               />
@@ -223,17 +259,43 @@ const RentalDetails = ({ goToStep }) => {
               </Form.Group>
             </Col>
           ))}
+
+          <Col xl={3} lg={3} md={4} sm={6}>
+            <Form.Group>
+              <Form.Label>Agreement Start From</Form.Label>
+              <Form.Control autoComplete="off" type="date"></Form.Control>
+            </Form.Group>
+          </Col>
+          <Col xl={3} lg={3} md={4} sm={6}>
+            <Form.Group>
+              <Form.Label>Escalation Rate</Form.Label>
+              <Form.Control autoComplete="off" maxLength={2}></Form.Control>
+            </Form.Group>
+          </Col>
+          <Col xl={3} lg={3} md={4} sm={6}>
+            <Form.Group>
+              <Form.Label>Place</Form.Label>
+              <Form.Control></Form.Control>
+            </Form.Group>
+          </Col>
         </Row>
         <Row>
           <Col className="mt-4">
+          <Form.Group>
+          {agreementOptions.map((option, index) => (
             <Form.Check
+              key={index}
               inline
-              label="Proceed with agreement with 250"
+              label={`${option.amount_desc_agr}`}
               name="agreementValue"
-              type="checkbox"
-              id="role-tenant"
-              onChange={handleChangeAgreementValCode}
+              type="radio"
+              id={`agreement-option-${index}`}
+              value={option.amount_desc}
+              onChange={handleRadioChange}
+              className="radio-custom"
             />
+          ))}
+        </Form.Group>
           </Col>
         </Row>
         <Row className="mt-4">
