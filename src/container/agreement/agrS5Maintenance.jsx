@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import { Row, Col,Button  } from "react-bootstrap";
 import { API_ENDPOINTS } from "../../utils/apiConfig";
+import { showPopup } from "../../utils/validation";
 
 const Maintenance = ({ goToStep }) => {
   const [items, setItems] = useState([]); // For storing API data
@@ -51,7 +52,8 @@ const Maintenance = ({ goToStep }) => {
       })
       .then((response) => {
         console.log("Update response:", response.data);
-        alert("Maintenance updated successfully!");
+        showPopup({title:"successfull", msg:"Maintenance Updated Scuccessfully", iconType:"success"});
+      //  alert("Maintenance updated successfully!");
         localStorage.setItem("maintenanceCodes", JSON.stringify(selectedValues));
           goToStep(6);
       })
@@ -63,7 +65,7 @@ const Maintenance = ({ goToStep }) => {
       <h4 className=" text-dark">Maintenance</h4>
       <p><span className=" text-danger fw-bold"> Note:</span> Check those boxes which will be maintained by Tenant</p>
       <Row>
-        <Col md={6}>
+        <Col md={12}>
           {items.length === 0 ? (
             <p>Loading...</p>
           ) : (
@@ -83,11 +85,7 @@ const Maintenance = ({ goToStep }) => {
               ))
           )}
         </Col>
-        <Col md={6}>
-          <h5>Selected Maintenance Codes:</h5>
-          <p>{selectedValues || "None selected"}</p>
        
-        </Col>
       </Row>
 
       <Row>
@@ -96,6 +94,11 @@ const Maintenance = ({ goToStep }) => {
         <Button onClick={updateMaintenance} className=" float-end" >Next</Button>
         </Col>
       </Row>
+      <Col className="d-none" md={6}>
+          <h5>Selected Maintenance Codes:</h5>
+          <p>{selectedValues || "None selected"}</p>
+       
+        </Col>
     </div>
   );
 };

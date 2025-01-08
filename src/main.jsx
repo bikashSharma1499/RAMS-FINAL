@@ -14,10 +14,10 @@ import Signin from './container/auth/signin.jsx';
 import Twostep from './container/auth/twostep.jsx';
 import Signup from './container/auth/signup.jsx';
 /*Rent Agreement*/
-import Rentagreement  from './container/agreement/agreement.jsx';
-import RentAgreementListAll from './container/agreement/agreemententrylistAll.jsx';
-import NewAgreement from './container/agreement/newagreement.jsx';
 
+import NewAgreement from './container/agreement/newAgreement.jsx'
+import RentAgreementActive from './container/agreement/agrActiveList.jsx';
+import LegalityProcess from './container/agreement/agrLegalityProcess.jsx';
 /*Property*/
 import PropertyList from './container/property/propertylist.jsx';
 import PropertyListing from './container/property/propertyListing.jsx';
@@ -47,10 +47,11 @@ ReactDOM.createRoot(document.getElementById('root')).render(
        </Route>
           <Route path={`${import.meta.env.BASE_URL}`} element={<App/>}>
           <Route path={`${import.meta.env.BASE_URL}dashboard`} element={<Crm/>} />
-          <Route path={`${import.meta.env.BASE_URL}agreement/list`} element={<RentAgreementListAll/>} />
+          <Route path={`${import.meta.env.BASE_URL}agreement/list`} element={<RentAgreementActive/>} />
           <Route path={`${import.meta.env.BASE_URL}newagreement/`} element={<NewAgreement/>} />
           <Route path={`${import.meta.env.BASE_URL}customer/list/`} element={<Customerlist/>} />
           <Route path={`${import.meta.env.BASE_URL}customer/registration/`} element={<CustomerNewRegistration/>} />
+          <Route path={`${import.meta.env.BASE_URL}agreement/LegalityProcess/`} element={<LegalityProcess/>} />
 
           {/*Property Listing*/}
           <Route path={`${import.meta.env.BASE_URL}property/dashboard/`} element= {<PropertyDashboard/>}/>
@@ -63,14 +64,9 @@ ReactDOM.createRoot(document.getElementById('root')).render(
           <Route path={`${import.meta.env.BASE_URL}verification/dashboard/`} element= {<VerificationDashboard/>}/>
           <Route path={`${import.meta.env.BASE_URL}verification/list`} element= {<VerificationListReport/>}/>
           <Route path={`${import.meta.env.BASE_URL}verification/payment-history`} element= {<PaymentHistory/>}/>
-        
            </Route>
-
-          <Route path={`${import.meta.env.BASE_URL}`} element={<Authenticationlayout />}>
-         
+          <Route path={`${import.meta.env.BASE_URL}`} element={<Authenticationlayout />}> 
           </Route>
-       
-
       </Routes>
     </React.Suspense>
   </BrowserRouter>

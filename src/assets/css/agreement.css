@@ -1,0 +1,47 @@
+.legal{
+    margin:auto;
+    padding: 25px;
+}
+.p1{
+    width: 210mm;
+    height: 297mm;
+    padding: 40px;
+    border:1px solid #ccc;
+    background: url("../../assets/images/agreement/odisha-stamp.png")  no-repeat center #fff;
+    background-size: contain;
+    margin:auto;
+    overflow: hidden;
+}
+ .p1 .stmp{
+    margin-top: 450px;
+}
+.pg{
+    width: 210mm;    
+    height: 297mm;
+    padding: 40px;
+    border:1px solid #ccc;
+    margin:auto;
+    margin-top: 15px;
+    background:#fff;
+    overflow: hidden;
+    vertical-align: middle;
+}
+.pg ol li{
+    list-style-type: disc !important;
+    line-height: 1.5 !important;
+    margin-bottom: 20px;
+}
+.legal h2{
+    font-size: 1.5rem;
+    text-align: center;
+    margin-bottom: 20px;
+}
+.legal ol li{
+    list-style-type: circle;
+    font-size: 1rem;
+    line-height: 2;
+}
+.legal p{
+    font-size: 0.95rem;
+    line-height: 1.5;
+}

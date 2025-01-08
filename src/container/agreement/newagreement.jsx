@@ -3,7 +3,7 @@ import { Card, Row, Col, Form, Button } from "react-bootstrap";
 
 import Pageheader from "../../components/pageheader/pageheader";
 import stampPaper from "../../assets/images/agreement/stamp-paper.jpg";
-import MultistepForm from "./agreement";
+import MultistepForm from "./agrMultiform";
 import { API_ENDPOINTS } from "../../utils/apiConfig";
 import axios from "axios";
 import {
@@ -14,9 +14,9 @@ import {
   decryptKeyWithExpiry,
 } from "../../utils/validation";
 import { GetLoginInfo } from "../auth/logindata";
-import { createAgreement } from "./agreementdata";
-import AgreementEntryList from "./agreemententrylist";
-import RentAgreementTenantList from "./agreementlist";
+import { createAgreement } from "./agreementAuthData";
+
+import AgreementPendingList from "./agrPendingList";
 
 function NewAgreement() {
   const [mobileNo, setMobileNo] = useState("");
@@ -27,6 +27,9 @@ function NewAgreement() {
   const [isLoading, setIsLoading] = useState(false);
   const [showAgreementList, setShowAgreementList] = useState(true);
   const [showResendOtp, setShowResendOtp] = useState(false);
+  const [timeLeft, setTimeLeft] = useState(120); // Timer initialized to 120 seconds
+  const [isActive, setIsActive] = useState(false); // To track if the timer should run
+
   const user = GetLoginInfo();
 
   const inputRefs = {
@@ -43,7 +46,7 @@ function NewAgreement() {
       const response = await axios.post(API_ENDPOINTS.otpAuthentication, {
         transactionType: "Login",
         customerType: user.userType, // Replace with the correct value
-        userMobileNo: user.userMobile,
+        userMobileNo: user.userType === "Landlord" ? user.userMobile : mobileNo,
         diviceId: deviceId,
       });
 
@@ -67,6 +70,9 @@ function NewAgreement() {
             encryptKeyWithExpiry(resultArray[4], 120)
           );
           setShowOtp(true);
+          setIsActive(true);
+          startTimer();
+          setTimeLeft(120);
         }
       }
     } catch (error) {
@@ -148,6 +154,36 @@ function NewAgreement() {
       e.preventDefault();
     }
   };
+
+  //#region countDownTimer
+  useEffect(() => {
+    let timer;
+    if (isActive && timeLeft > 0) {
+      timer = setInterval(() => {
+        setTimeLeft((prevTime) => prevTime - 1);
+      }, 1000);
+    }else{
+      setIsActive(false);
+    }
+
+    // Cleanup the interval on component unmount or when isActive changes
+    return () => clearInterval(timer);
+  }, [isActive, timeLeft]);
+
+  const startTimer = () => {
+    setIsActive(true); // Start the timer
+  };
+
+  const formatTime = (time) => {
+    const minutes = Math.floor(time / 60);
+    const seconds = time % 60;
+    return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(
+      2,
+      "0"
+    )}`;
+  };
+
+  //#endregion
   return (
     <>
       <Pageheader
@@ -174,7 +210,9 @@ function NewAgreement() {
                         </h4>
                         <Form.Group>
                           <Form.Label className=" h4 fw-bold mb-2 text-muted">
-                            Your mobile No
+                            {user.userType === "Landlord"
+                              ? "Your Mobile no"
+                              : "Enter Landlord Mobile No"}
                           </Form.Label>
                           <Form.Control
                             readOnly
@@ -237,7 +275,18 @@ function NewAgreement() {
                         <Col md={6} className="mx-auto" lg={4}>
                           <Card className=" mt-5 border-1  border-dark-subtle border">
                             <Card.Body>
-                              <h4 className="  mb-4">Authentication </h4>
+                              <h5 className="  mb-4">
+                                Enter OTP Sent to{" "}
+                                {user.userType === "Landlord"
+                                  ? MaskInitial({
+                                      input: user.userMobile,
+                                      endIndex: 6,
+                                    })
+                                  : MaskInitial({
+                                      input: mobileNo,
+                                      endIndex: 6,
+                                    })}{" "}
+                              </h5>
                               <Row>
                                 <div className="col-3">
                                   <Form.Control
@@ -288,30 +337,57 @@ function NewAgreement() {
                                     id="four"
                                     maxLength={1}
                                     autoComplete="off"
-                                  // onChange={() => handleOtpVerify}
+                                    // onChange={() => handleOtpVerify}
                                     ref={inputRefs.four}
                                     onKeyPress={handleNumericInput}
                                   />
                                 </div>
                               </Row>
+                   
+                                    <Row>
+                                    <Col>
+                                      {error && (
+                                        <div className="text-danger mt-2">
+                                          {error}
+                                        </div>
+                                      )}
+                                    </Col>
+                                  </Row>
+                  
+                          
                               <Row>
-                                <Col>
-                                  {error && (
-                                    <div className="text-danger mt-2">
-                                      {error}
-                                    </div>
+                                <Col xs={12}>
+                                  {isActive ? (
+                                    <>
+                                      <p>
+                                        Resend OTP in {formatTime(timeLeft)}
+                                      </p>
+                                    </>
+                                  ) : (
+                                    ""
                                   )}
                                 </Col>
-                              </Row>
-                              <Row>
                                 <Col className="mx-auto text-center" md={6}>
-                                  <Button
-                                    onClick={handleOtpVerify}
-                                    className="mt-3"
-                                  >
-                                    {" "}
-                                    Verify
-                                  </Button>
+                                  {isActive ? (
+                                    <>
+                                      <button
+                                        onClick={handleOtpVerify}
+                                        className="mt-3 btn-save"
+                                      >
+                                        {" "}
+                                        Verify
+                                      </button>
+                                    </>
+                                  ) : (
+                                    <button
+                                      
+                                      onClick={handleProceed}
+                                      className="mt-3  btn-attractive"
+                                    >
+                                      {" "}
+                                      Resend
+                                    </button>
+                                  )}
                                 </Col>
                               </Row>
                             </Card.Body>
@@ -323,14 +399,14 @@ function NewAgreement() {
                 </>
               ) : (
                 <>
-                  <div className=" w-100 text-end">
+                  <div className=" w-100  d-flex justify-content-between">
+                    <h5>Continue or Create a new Agreement</h5>
                     <Button onClick={() => setShowAgreementList(false)}>
                       {" "}
-                      <i className=" bi-plus-circle"></i> New Agreement{" "}
+                      <i className=" bi-plus-circle"></i> Create Agreement{" "}
                     </Button>
                   </div>
-             {/* <AgreementEntryList /> */}
-    
+                  {/* <AgreementPendingList /> */}
                 </>
               )}
             </Card.Body>

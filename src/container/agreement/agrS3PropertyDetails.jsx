@@ -1,7 +1,11 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Row, Col, Form, Button } from "react-bootstrap";
 import Select from "react-select";
-import { property, propertyHousingType, propertyType } from "./agreementdata";
+import {
+  property,
+  propertyHousingType,
+  propertyType,
+} from "./agreementAuthData";
 import { GetLoginInfo } from "../auth/logindata";
 import axios from "axios";
 import { API_ENDPOINTS } from "../../utils/apiConfig";
@@ -29,10 +33,7 @@ const PropertyDetails = ({ goToStep }) => {
   const [showForm, setShowForm] = useState(false);
   const [showNewButton, setShowNewButton] = useState(true);
   const [showPropertyDropDown, setShowPropertyDropDown] = useState(true);
-  const [propAgrCode, setPropAgrCode]= useState(0);
 
-
-  // Load Google Maps API
   useEffect(() => {
     const loadGoogleMapsScript = () => {
       if (document.querySelector(`script[src*="maps.googleapis.com"]`)) {
@@ -41,7 +42,7 @@ const PropertyDetails = ({ goToStep }) => {
       }
 
       const script = document.createElement("script");
-      script.src = `https://maps.googleapis.com/maps/api/js?key=AIzaSyDaqeMVzzWsG2gdnoO8PhMN7VXVCAMG0Ts&libraries=places`;
+      script.src = `https://maps.googleapis.com/maps/api/js?key=YOUR_GOOGLE_MAPS_API_KEY&libraries=places`;
       script.async = true;
       script.onload = initAutocomplete;
       document.head.appendChild(script);
@@ -53,17 +54,24 @@ const PropertyDetails = ({ goToStep }) => {
   const initAutocomplete = () => {
     if (!window.google?.maps?.places) return;
 
-    const autocomplete = new window.google.maps.places.Autocomplete(inputRef.current, {
-      types: ["establishment"],
-      componentRestrictions: { country: "in" },
-      fields: ["geometry", "formatted_address", "address_components"],
-    });
+    const autocomplete = new window.google.maps.places.Autocomplete(
+      inputRef.current,
+      {
+        types: ["establishment"],
+        componentRestrictions: { country: "in" },
+        fields: ["geometry", "formatted_address", "address_components"],
+      }
+    );
 
     autocomplete.addListener("place_changed", () => {
       const place = autocomplete.getPlace();
       if (!place || !place.geometry) return;
 
-      const { formatted_address: fullAddress, geometry, address_components: components } = place;
+      const {
+        formatted_address: fullAddress,
+        geometry,
+        address_components: components,
+      } = place;
       const parsedData = parseAddressComponents(components);
 
       setAddressDetails((prevState) => ({
@@ -92,7 +100,8 @@ const PropertyDetails = ({ goToStep }) => {
       const { types, long_name } = component;
       if (types.includes("street_number")) parsedData.mainAddress = long_name;
       if (types.includes("locality")) parsedData.city = long_name;
-      if (types.includes("administrative_area_level_1")) parsedData.state = long_name;
+      if (types.includes("administrative_area_level_1"))
+        parsedData.state = long_name;
       if (types.includes("country")) parsedData.country = long_name;
       if (types.includes("postal_code")) parsedData.pinCode = long_name;
       if (types.includes("sublocality")) parsedData.area = long_name;
@@ -101,22 +110,21 @@ const PropertyDetails = ({ goToStep }) => {
     return parsedData;
   };
 
+  useEffect(() => {
+    const savedPropertyValue = localStorage.getItem("propValp");
+    if (savedPropertyValue && savedPropertyValue !== "0") {
+      handlePropertySelection(savedPropertyValue);
+    }
+  }, []);
 
-  useEffect(()=>{
-   const checkSubmissionPropVal =  localStorage.getItem('propValp');
-   if(checkSubmissionPropVal && checkSubmissionPropVal!="0" ){
-      //setShowForm(true);
-      handlePropertySelection(checkSubmissionPropVal);
-
-   }
-  },[])
-
-  // Fetch Property Data
   useEffect(() => {
     const fetchPropertyData = async () => {
       try {
         const data = await property();
-        const filteredData = data.filter(({ property_status }) => property_status !== "Occupied");
+  
+        const filteredData = data.filter(
+          ({ property_status }) => property_status !== "Occupied"
+        );
   
         setPropertyList([
           { value: 0, label: "Select" },
@@ -125,6 +133,47 @@ const PropertyDetails = ({ goToStep }) => {
             label: property_name,
           })),
         ]);
+  
+        const pCode = localStorage.getItem("propValp");
+        if (pCode && pCode !== "0") {
+          // Use `find` instead of `filter` to get a single object
+          const fetchedProperty = data.find(
+            ({ property_code }) => property_code === parseInt(pCode, 10) // Ensure type matching
+          );
+          
+          if (fetchedProperty) {
+            console.log(fetchedProperty);
+            debugger;
+            const housingTypes = await propertyHousingType(
+              fetchedProperty.property_type_code
+            );
+            setAddressDetails((prevState) => ({
+              ...prevState,
+              i_address: fetchedProperty.google_api_address,
+              i_main_address: fetchedProperty.actual_address,
+              i_location: fetchedProperty.location,
+              i_propertyID: fetchedProperty.property_id,
+              i_property_name: fetchedProperty.property_name,
+              i_property_type_code: fetchedProperty.property_type_code,
+              i_housing_code: housingTypes[0]?.housing_code || "",
+              i_latitude: fetchedProperty.latitude,
+              i_longitude: fetchedProperty.logitude,
+            }));
+  
+            setLatLong(
+              `${fetchedProperty.latitude}, ${fetchedProperty.logitude}`
+            );
+            setPropertyHousing([
+              { value: 0, label: "Select" },
+              ...housingTypes.map(({ housing_code, house_name }) => ({
+                value: housing_code,
+                label: house_name,
+              })),
+            ]);
+          } else {
+            console.warn("Property not found for the given property_code:", pCode);
+          }
+        }
       } catch (error) {
         console.error("Failed to fetch property data:", error);
       }
@@ -141,11 +190,13 @@ const PropertyDetails = ({ goToStep }) => {
         (item) => item.property_code === selectedOption.value
       );
 
-     setShowForm(true);
+      setShowForm(true);
       setShowNewButton(false);
 
       if (selectedProperty) {
-        const housingTypes = await propertyHousingType(selectedProperty.property_type_code);
+        const housingTypes = await propertyHousingType(
+          selectedProperty.property_type_code
+        );
         setAddressDetails((prevState) => ({
           ...prevState,
           i_address: selectedProperty.google_api_address,
@@ -159,7 +210,9 @@ const PropertyDetails = ({ goToStep }) => {
           i_longitude: selectedProperty.logitude,
         }));
 
-        setLatLong(`${selectedProperty.latitude}, ${selectedProperty.logitude}`);
+        setLatLong(
+          `${selectedProperty.latitude}, ${selectedProperty.logitude}`
+        );
         setPropertyHousing([
           { value: 0, label: "Select" },
           ...housingTypes.map(({ housing_code, house_name }) => ({
@@ -173,8 +226,6 @@ const PropertyDetails = ({ goToStep }) => {
     }
   };
 
-
-  // Fetch Property Type Data
   useEffect(() => {
     const fetchPropertyTypeData = async () => {
       try {
@@ -196,11 +247,8 @@ const PropertyDetails = ({ goToStep }) => {
 
   const handlePropertyTypeChange = async (selectedOption) => {
     const selectedPropertyTypeCode = selectedOption.value;
-    
-    // Fetch housing types based on selected property type
     const housingTypes = await propertyHousingType(selectedPropertyTypeCode);
-  
-    // Update property housing state with fetched housing types
+
     setPropertyHousing([
       { value: 0, label: "Select" },
       ...housingTypes.map(({ housing_code, house_name }) => ({
@@ -208,14 +256,12 @@ const PropertyDetails = ({ goToStep }) => {
         label: house_name,
       })),
     ]);
-  
-    // Optionally, set the selected property type code in your state
+
     setAddressDetails((prevDetails) => ({
       ...prevDetails,
       i_property_type_code: selectedPropertyTypeCode,
     }));
   };
-  
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -232,8 +278,6 @@ const PropertyDetails = ({ goToStep }) => {
     setAddressDetails(initialState);
     setLatLong("");
     setPropertyHousing([]);
-    // Re-enable autocomplete after reset
-  //  loadGoogleMapsScript();
   };
 
   const handleChangeProperty = () => {
@@ -246,76 +290,83 @@ const PropertyDetails = ({ goToStep }) => {
   };
 
   const handleSubmit = async () => {
-      //  debugger;
+    //  debugger;
     if (!addressDetails) {
-        alert("Please fill in all fields");
-        return;
+      alert("Please fill in all fields");
+      return;
     }
     try {
-        const agr = JSON.parse(localStorage.getItem("rg_rcd"));
-        if (!agr) {
-            alert("Agreement data not found.");
-            return;
-        }
+      const agr = JSON.parse(localStorage.getItem("rg_rcd"));
+      if (!agr) {
+        alert("Agreement data not found.");
+        return;
+      }
 
-        const user = GetLoginInfo();
-        if (!user) {
-            alert("User data not found.");
-            return;
-        }
+      const user = GetLoginInfo();
+      if (!user) {
+        alert("User data not found.");
+        return;
+      }
 
-        // Construct payload
-        const payload = {
-          agreementCode: agr?.agr_k || '',
-          propetyID: addressDetails?.i_propertyID || '0',
-          firstPartyCode: user?.userKey || '', 
-          housingCode: 1,// Use a valid default ID
-          propertyName: addressDetails?.i_property_name || 'Default Property Name',
-          mainAddress: addressDetails?.i_main_address || 'Default Main Address',
-          address: addressDetails?.i_address || 'Default Address', // Fallback to default value
-          location: addressDetails?.i_location || 'Default Location',
-           longitude: addressDetails?.i_longitude?.toString() || '0',
-          latitude: addressDetails?.i_latitude?.toString() || '0',
-          loginMobileNumber: user?.userMobile || '',
-          loginPersonType: user?.userType || '',
+      // Construct payload
+      const payload = {
+        agreementCode: agr?.agr_k || "",
+        propetyID: addressDetails?.i_propertyID || "0",
+        firstPartyCode: user?.userKey || "",
+        housingCode: 1, // Use a valid default ID
+        propertyName:
+          addressDetails?.i_property_name || "Default Property Name",
+        mainAddress: addressDetails?.i_main_address || "Default Main Address",
+        address: addressDetails?.i_address || "Default Address", // Fallback to default value
+        location: addressDetails?.i_location || "Default Location",
+        longitude: addressDetails?.i_longitude?.toString() || "0",
+        latitude: addressDetails?.i_latitude?.toString() || "0",
+        loginMobileNumber: user?.userMobile || "",
+        loginPersonType: user?.userType || "",
       };
 
-        // Log payload for debugging
-        console.log("Submitting payload:", payload);
+      // Log payload for debugging
+      console.log("Submitting payload:", payload);
 
-        // Perform the API request
-        const response = await axios.post(API_ENDPOINTS.agreementProperty, payload);
+      // Perform the API request
+      const response = await axios.post(
+        API_ENDPOINTS.agreementProperty,
+        payload
+      );
 
-        // Handle successful response
-        console.log("Response data:", response.data);
+      // Handle successful response
+      console.log("Response data:", response.data);
 
-        // Parse response if it's a string
-        if (response.status === 200) {
-          const resultString = response.data.result; // Access the 'result' field
-          const resultArray = resultString.split(','); // Split the string into an array
-      
-          if (resultArray.length > 1) {
-              localStorage.setItem("propValp", resultArray[1]); // Store the second value in localStorage
-              setShowForm(true); // Perform your action
-          }
-        showPopup({title:"Successfull", msg:"Submitted Successfully",iconType:"success"});
+      // Parse response if it's a string
+      if (response.status === 200) {
+        const resultString = response.data.result; // Access the 'result' field
+        const resultArray = resultString.split(","); // Split the string into an array
+
+        if (resultArray.length > 1) {
+          localStorage.setItem("propValp", resultArray[1]); // Store the second value in localStorage
+          setShowForm(true); // Perform your action
+        }
+        showPopup({
+          title: "Successfull",
+          msg: "Submitted Successfully",
+          iconType: "success",
+        });
         goToStep(4);
-          console.log("Result Array:", resultArray); // Log the array to verify
+        console.log("Result Array:", resultArray); // Log the array to verify
       }
-       
     } catch (error) {
       console.error("Failed to submit data:", error);
       if (error.response) {
-          console.log("Response Data:", error.response.data);
-          console.log("Validation Errors:", error.response.data.errors); // Log specific errors
-          alert(`Validation error: ${JSON.stringify(error.response.data.errors)}`);
+        console.log("Response Data:", error.response.data);
+        console.log("Validation Errors:", error.response.data.errors); // Log specific errors
+        alert(
+          `Validation error: ${JSON.stringify(error.response.data.errors)}`
+        );
       } else {
-          console.error("Unexpected Error:", error.message);
+        console.error("Unexpected Error:", error.message);
       }
-  }
-  
-};
-
+    }
+  };
 
   return (
     <div>
@@ -329,7 +380,7 @@ const PropertyDetails = ({ goToStep }) => {
           ""
         )}
       </h3>
-  
+
       <div className="panel-content my-4">
         {!showForm ? (
           <Row>
@@ -348,8 +399,12 @@ const PropertyDetails = ({ goToStep }) => {
               )}
             </Col>
             <Col xl={2}>
-              {(showNewButton && GetLoginInfo().userType==='Landlord' ) ? (
-                <Button variant="success" className="mt-4" onClick={handleAddNew}>
+              {showNewButton && GetLoginInfo().userType === "Landlord" ? (
+                <Button
+                  variant="success"
+                  className="mt-4"
+                  onClick={handleAddNew}
+                >
                   <i className="bi-plus-square"></i> Add New
                 </Button>
               ) : (
@@ -366,7 +421,8 @@ const PropertyDetails = ({ goToStep }) => {
                   options={propertyTypeList}
                   placeholder="Select property type..."
                   value={propertyTypeList.find(
-                    (option) => option.value === addressDetails.i_property_type_code
+                    (option) =>
+                      option.value === addressDetails.i_property_type_code
                   )}
                   onChange={handlePropertyTypeChange}
                 />
@@ -381,12 +437,17 @@ const PropertyDetails = ({ goToStep }) => {
                   value={propertyHousing.find(
                     (option) => option.value === addressDetails.i_housing_code
                   )}
-                  onChange={setAddressDetails.i_housing_code}
-                  
+                  onChange={(selectedOption) =>
+                    setAddressDetails((prevState) => ({
+                      ...prevState,
+                      i_housing_code: selectedOption.value,
+                    }))
+                   
+                  }
                 />
               </Form.Group>
             </Col>
-  
+
             <Col xl={3}>
               <Form.Group>
                 <Form.Label>Property Name</Form.Label>
@@ -424,15 +485,13 @@ const PropertyDetails = ({ goToStep }) => {
                 <Form.Label>Location</Form.Label>
                 <Form.Control
                   type="text"
-                  disabled
                   name="i_location"
                   value={addressDetails.i_location}
                   onChange={handleInputChange}
                 />
               </Form.Group>
             </Col>
-          
-  
+
             <Col xl={3}>
               <Form.Group>
                 <Form.Label>Longitude</Form.Label>
@@ -458,20 +517,18 @@ const PropertyDetails = ({ goToStep }) => {
           </Row>
         )}
       </div>
-  
+
       <div className="w-100">
         <Button variant="secondary" onClick={() => goToStep(2)}>
           Previous
         </Button>
-     
-        <Button variant="success"  onClick={handleSubmit} className=" float-end">
-       Save & Next
+
+        <Button variant="success" onClick={handleSubmit} className=" float-end">
+          Save & Next
         </Button>
-      
       </div>
     </div>
   );
-  
 };
 
 export default PropertyDetails;

@@ -490,3 +490,10 @@ table.dataTable tbody tr.parent td.dtr-control::before {
   margin-bottom: 0;
   cursor: pointer;
 }
+
+
+.btn-none{
+  background-color: transparent;
+  border: 0;
+  padding: 2px;
+}

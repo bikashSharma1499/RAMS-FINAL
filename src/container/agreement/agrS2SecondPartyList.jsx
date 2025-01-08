@@ -93,10 +93,10 @@ function RentAgreementTenantList() {
   return (
     <div className="container py-4">
       {/* Page Header */}
-      <div className="mb-4 p-3 d-flex align-items-center justify-content-between border border-1">
-        <h3 className="text-primary d-flex align-items-center">
+      <div className=" d-flex align-items-center justify-content-between ">
+        <h5 className="text-primary d-flex">
           <IoIosPeople className="me-2" /> Tenant List
-        </h3>
+        </h5>
         <div className="search-box">
           <div className="input-group">
             <input

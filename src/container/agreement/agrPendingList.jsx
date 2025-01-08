@@ -5,7 +5,7 @@ import { API_ENDPOINTS } from "../../utils/apiConfig";
 import { GetLoginInfo } from "../auth/logindata";
 import { useNavigate } from "react-router-dom";
 
-const AgreementEntryList = () => {
+const AgreementPendingList = () => {
   const [dataList, setDataList] = useState([]);
   const [filteredDataList, setFilteredDataList] = useState([]);
   const [loadingList, setLoadingList] = useState(false);
@@ -109,7 +109,7 @@ const AgreementEntryList = () => {
   ];
 
   return (
-    <div style={{ padding: "20px" }}>
+    <div>
       {error && <div className="alert alert-danger">{error}</div>} {/* Display error message */}
       
       <div className="d-flex justify-content-between">
@@ -140,4 +140,4 @@ const AgreementEntryList = () => {
   );
 };
 
-export default AgreementEntryList;
+export default AgreementPendingList;

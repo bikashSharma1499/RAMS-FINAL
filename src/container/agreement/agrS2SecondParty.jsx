@@ -1,10 +1,10 @@
-import { Row, Col, Form, Button } from "react-bootstrap";
+import { Row, Col, Form, Button, Card } from "react-bootstrap";
 import { useEffect, useState, useCallback, useRef } from "react";
 import Select from "react-select";
 import axios from "axios";
 import { GetLoginInfo } from "../auth/logindata";
 import { API_ENDPOINTS } from "../../utils/apiConfig";
-import { mobileAuthentication } from "./agreementdata";
+import { mobileAuthentication } from "./agreementAuthData";
 import {
   decryptKeyNormal,
   decryptKeyWithExpiry,
@@ -12,9 +12,9 @@ import {
   encryptKeyWithExpiry,
   showPopup,
 } from "../../utils/validation";
-import RentAgreementTenantList from "./agreementlist";
+import RentAgreementTenantList from "./agrS2SecondPartyList";
 
-const SecondPartyValidation =  ({ goToStep}) => {
+const SecondPartyValidation = ({ goToStep }) => {
   const user = GetLoginInfo();
   const [inputMobile, setInputMobile] = useState("");
   const [showForm, setShowForm] = useState(false);
@@ -45,18 +45,18 @@ const SecondPartyValidation =  ({ goToStep}) => {
   const [inputData, setInputData] = useState(initialState);
 
   const [error, setError] = useState("");
-const [nextEnabled, setNextEnabled]= useState(false);
-
+  const [nextEnabled, setNextEnabled] = useState(false);
+  const [timeLeft, setTimeLeft] = useState(120); // Timer initialized to 120 seconds
+  const [isActive, setIsActive] = useState(false); // To track if the timer should run
   useEffect(() => {
-  
-    const setNextEnable=()=>{
-const count = localStorage.getItem('tenantCount');
-if(count && count>0){
-  setNextEnabled(true);
-}    };
+    const setNextEnable = () => {
+      const count = sessionStorage.getItem("tenantCount");
+      if (count && count > 0) {
+        setNextEnabled(true);
+      }
+    };
     setNextEnable();
   }, [showTenantList]);
-
 
   //#region OTP Handling
   const inputRefs = useRef({
@@ -88,6 +88,9 @@ if(count && count>0){
         });
         // localStorage.removeItem("rentOtp");
         //localStorage.removeItem("rent_styp");
+        setIsActive(true);
+        startTimer();
+       setTimeLeft(120);
         localStorage.setItem("rentOtpSP", encryptKeyNormal(response[4]), 120);
         localStorage.setItem("rent_tnt_k", encryptKeyNormal(response[3]));
         localStorage.setItem("rent_styp", response[0]);
@@ -95,7 +98,7 @@ if(count && count>0){
       } else {
         showPopup({
           title: "Error",
-          msg: "Something went wrong",
+          msg: "Something went wrong.. Please Submit Again",
           icontype: "error",
         });
       }
@@ -147,7 +150,7 @@ if(count && count>0){
         showPopup({ title: "Error", msg: "Invalid OTP", icontype: "error" });
       }
     }
-   // setShowForm(false);SetShowTennantList(true);
+    // setShowForm(false);SetShowTennantList(true);
   };
 
   //#endregion
@@ -160,19 +163,23 @@ if(count && count>0){
         customerType: "Tenant",
         customerCode: decryptKeyNormal(localStorage.getItem("rent_tnt_k")),
       });
-  
+
       if (Array.isArray(response.data) && response.data.length > 0) {
         const user = response.data[0]; // Extract user data
         setUserData(user); // Update the userData state
-  
+
         // Map user data to inputData state with proper fallback checks
         setInputData({
           sp_email: typeof user.mail_id === "string" ? user.mail_id : "",
           sp_title: typeof user.title === "string" ? user.title : "",
           sp_fname: typeof user.first_name === "string" ? user.first_name : "",
           sp_lname: typeof user.last_name === "string" ? user.last_name : "",
-          sp_fathername: typeof user.father_name === "string" ? user.father_name : "",
-          sp_age: typeof user.age === "string" || typeof user.age === "number" ? user.age : "",
+          sp_fathername:
+            typeof user.father_name === "string" ? user.father_name : "",
+          sp_age:
+            typeof user.age === "string" || typeof user.age === "number"
+              ? user.age
+              : "",
           sp_address: typeof user.address === "string" ? user.address : "",
         });
       } else {
@@ -229,7 +236,6 @@ if(count && count>0){
 
   // Handle form submission
   const handleSubmit = async (retryCount = 0) => {
-   
     let validationErrors = {};
     let isValid = true;
 
@@ -283,6 +289,12 @@ if(count && count>0){
         msg: "Tenant Added Successfully",
         iconType: "success",
       });
+      const count = sessionStorage.getItem("tenantCount");
+      if (count) {
+        sessionStorage.setItem("tenantCount", parseInt(count) + 1);
+      } else {
+        sessionStorage.setItem("tenantCount", 1);
+      }
       setOtpValidation(false);
       setInputData(initialState);
       setTimeout(() => {
@@ -308,22 +320,51 @@ if(count && count>0){
   };
   //#endregion
 
-
-
   //#region  Add New tenant state
   const handleNewTenant = () => {
-    
     SetShowTennantList(false);
     setShowForm(false);
     setOtpValidation(false);
   };
 
-  const handleCancel =()=>{
+  const handleCancel = () => {
     SetShowTennantList(true);
     setShowForm(false);
     setOtpValidation(false);
-  }
+  };
   //#endregion
+
+  //#region countDownTimer
+  useEffect(() => {
+    let timer;
+    if (isActive && timeLeft > 0) {
+      timer = setInterval(() => {
+        setTimeLeft((prevTime) => prevTime - 1);
+      }, 1000);
+    }else{
+      setIsActive(false);
+    }
+
+    // Cleanup the interval on component unmount or when isActive changes
+    return () => clearInterval(timer);
+  }, [isActive, timeLeft]);
+
+  const startTimer = () => {
+    setIsActive(true); // Start the timer
+  };
+
+  const formatTime = (time) => {
+    const minutes = Math.floor(time / 60);
+    const seconds = time % 60;
+    return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(
+      2,
+      "0"
+    )}`;
+  };
+
+  //#endregion
+
+
   return (
     <div>
       <h4 className="fw-bolder text-dark">Second Party</h4>
@@ -345,8 +386,18 @@ if(count && count>0){
 
           <Row>
             <Col>
-            <Button className=" float-start"  onClick={()=>goToStep(1)} >Prev</Button>
-            <Button className=" float-end"  onClick={()=>goToStep(3)} >Next</Button>
+              <Button className=" float-start" onClick={() => goToStep(1)}>
+                Prev
+              </Button>
+              {nextEnabled ? (
+                <>
+                  <Button className=" float-end" onClick={() => goToStep(3)}>
+                    Next
+                  </Button>
+                </>
+              ) : (
+                <></>
+              )}
             </Col>
           </Row>
         </>
@@ -354,66 +405,101 @@ if(count && count>0){
         <>
           {!showForm ? (
             <Row className="mb-4">
-              <Col lg={3} md={4} sm={6}>
-                <Form.Group>
-                  <Form.Label>Mobile No</Form.Label>
-                  <Form.Control
-                    value={inputMobile}
-                    maxLength={10}
-                    autoComplete="off"
-                    disabled={otpValidation}
-                    onChange={(e) =>
-                      setInputMobile(e.target.value.replace(/\D/g, ""))
-                    }
-                  />
-                </Form.Group>
-              </Col>
-              <Col lg={3} className=" ms-md-5 mt-4">
-                {!otpValidation ? (
-                  <Button
-                    onClick={mobileOtp}
-                  
-                    className="btn btn-success "
-                  >
-                    Send OTP
-                  </Button>
-                ) : (
-                  <>
-                    <Row>
-                      {["one", "two", "three", "four"].map((id, index) => (
-                        <Col key={id} lg={3}>
-                          <Form.Control
-                            type="text"
-                            className="form-control-lg text-center"
-                            maxLength={1}
-                            autoComplete="off"
-                            onChange={() =>
-                              handleInputOTP(
-                                id,
-                                ["one", "two", "three", "four"][index + 1]
-                              )
-                            }
-                            ref={inputRefs.current[id]}
-                            onKeyDown={(e) =>
-                              id === "four" &&
-                              e.key === "Enter" &&
-                              handleOtpVerify()
-                            }
-                          />
-                        </Col>
-                      ))}
-                    </Row>
-                    <Button
-                      onClick={handleOtpVerify}
-                      className="btn btn-primary mx-auto mt-3"
-                    >
-                      Validate OTP
+              {!otpValidation ? (
+                <>
+                  <Col lg={3} md={4} sm={6}>
+                    <Form.Group>
+                      <Form.Label>Mobile No</Form.Label>
+                      <Form.Control
+                        value={inputMobile}
+                        maxLength={10}
+                        autoComplete="off"
+                        disabled={otpValidation}
+                        onChange={(e) =>
+                          setInputMobile(e.target.value.replace(/\D/g, ""))
+                        }
+                      />
+                    </Form.Group>
+                  </Col>
+                  <Col lg={4} className=" ms-md-5 mt-4">
+                    <Button onClick={mobileOtp} className="btn btn-success ">
+                      Send OTP
                     </Button>
+                  </Col>
+                </>
+              ) : (
+                <>
+                  <Col lg={4} className="  mx-auto mt-4">
+                    <Card>
+                      <Card.Body>
+                        <p className=" fw-bold">
+                          Enter Four digit OTP Sent to {inputMobile}  <span className="ms-2  cursor  btn-link text-danger" onClick={()=>setOtpValidation(false)} > Wrong?</span>
+                        </p>
+                        <Row>
+                          {["one", "two", "three", "four"].map((id, index) => (
+                            <Col key={id} xs={3}>
+                              <Form.Control
+                                type="text"
+                                className="form-control-lg text-center"
+                                maxLength={1}
+                                autoComplete="off"
+                                onChange={() =>
+                                  handleInputOTP(
+                                    id,
+                                    ["one", "two", "three", "four"][index + 1]
+                                  )
+                                }
+                                ref={inputRefs.current[id]}
+                                onKeyDown={(e) =>
+                                  id === "four" &&
+                                  e.key === "Enter" &&
+                                  handleOtpVerify()
+                                }
+                              />
+                            </Col>
+                          ))}
+                        </Row>
+                        <Row>
+                          <Col xs={12}>
+                            {isActive ? (
+                              <>
+                                <p className="mt-2">Resend OTP in <span className=" text-danger" >{formatTime(timeLeft)}</span> </p>
+                              </>
+                            ) : (
+                              ""
+                            )}
+                          </Col>
+                        </Row>
 
-                    <Button  onClick={mobileOtp} className="btn btn-primary mt-3 ms-2" > Resend OTP</Button>
-                  </>
-                )}
-              </Col>
+<Row>
+  <Col className="text-center">
+                        {isActive ? (
+                          <>
+                            <button
+                              onClick={handleOtpVerify}
+                              className=" btn-save mx-auto mt-3"
+                            >
+                              Validate OTP
+                            </button>
+                          </>
+                        ) : (
+                          <>
+                            <button
+                              onClick={mobileOtp}
+                              className=" btn-update mt-3 ms-2"
+                            >
+                              {" "}
+                              Resend OTP
+                            </button>
+                          </>
+                        )}
+                         </Col>
+                         </Row> 
+                      </Card.Body>
+                    </Card>
+                  </Col>
+                </>
+              )}
             </Row>
           ) : (
             <div>
@@ -481,6 +567,7 @@ if(count && count>0){
                   <Form.Group>
                     <Form.Label>First Name</Form.Label>
                     <Form.Control
+                      autoComplete="off"
                       name="sp_fname"
                       value={inputData.sp_fname}
                       onChange={handleInputChange}
@@ -497,11 +584,12 @@ if(count && count>0){
                   <Form.Group>
                     <Form.Label>Last Name</Form.Label>
                     <Form.Control
+                      autoComplete="off"
                       name="sp_lname"
                       value={inputData.sp_lname}
                       onChange={handleInputChange}
                       type="text"
-                      maxLength={50}
+                      maxLength={100}
                     ></Form.Control>
                     {errors.sp_lname && (
                       <div className="text-danger">{errors.sp_lname}</div>
@@ -513,10 +601,11 @@ if(count && count>0){
                     <Form.Label>Father Name</Form.Label>
                     <Form.Control
                       name="sp_fathername"
+                      autoComplete="off"
                       value={inputData.sp_fathername}
                       onChange={handleInputChange}
                       type="text"
-                      maxLength={50}
+                      maxLength={200}
                     ></Form.Control>
                     {errors.sp_fathername && (
                       <div className="text-danger">{errors.sp_fathername}</div>
@@ -531,6 +620,7 @@ if(count && count>0){
                       value={inputData.sp_age}
                       onChange={handleInputChange}
                       type="text"
+                      autoComplete="off"
                       maxLength={2}
                     ></Form.Control>
                     {errors.sp_age && (
@@ -542,6 +632,7 @@ if(count && count>0){
                   <Form.Group>
                     <Form.Label>Address</Form.Label>
                     <Form.Control
+                      autoComplete="off"
                       name="sp_address"
                       value={inputData.sp_address}
                       onChange={handleInputChange}
@@ -569,8 +660,11 @@ if(count && count>0){
                       </>
                     )}
                   </Button>
-                  <Button onClick={handleCancel} className="btn btn-danger  mt-3 ms-2">
-Cancel
+                  <Button
+                    onClick={handleCancel}
+                    className="btn btn-danger  mt-3 ms-2"
+                  >
+                    Cancel
                   </Button>
                 </Col>
               </Row>

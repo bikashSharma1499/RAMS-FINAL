@@ -1,10 +1,10 @@
 import React, { useState, useEffect, Fragment } from "react";
-import Firstpartyvalidation from "./fisrtpartyvalidation";
-import Maintenance from "./maintenance";
-import PropertyDetails from "./propertydetails";
-import SecondPartyValidation from "./secondpartyvaldiation";
-import RentalDetails from "./rentaldetails";
-import Amenities from "./amenties";
+import Firstpartyvalidation from "./agrS1FirstParty";
+import Maintenance from "./agrS5maintenance";
+import PropertyDetails from "./agrS3PropertyDetails";
+import SecondPartyValidation from "./agrS2SecondParty";
+import RentalDetails from "./agrS6Rental";
+import Amenities from "./agrS4Amenities";
 import { Card } from "react-bootstrap";
 
 const MultistepForm = () => {
