@@ -475,56 +475,7 @@ const VerificationForm = () => {
                         <>Loading... Please hold on</>
                       ) : (
                         <>
-                          <Row>
-                            {services.map((service) => (
-                              <Col
-                                lg={4}
-                                md={6}
-                                sm={6}
-                                key={service.service_code}
-                              >
-                                <div
-                                  style={{
-                                    border: "1px solid #ddd",
-                                    margin: "5px 0",
-                                    borderRadius: "8px",
-                                    padding: "16px",
-                                    textAlign: "center",
-                                    cursor: "pointer",
-                                    boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
-                                    transition:
-                                      "transform 0.3s ease, box-shadow 0.3s ease",
-                                  }}
-                                  className="service-card"
-                                  onClick={() =>
-                                    handleServiceSelection(service)
-                                  }
-                                >
-                                  <Row
-                                    style={{ height: "60px" }}
-                                    className="align-items-center my-1 "
-                                  >
-                                    <Col xs={3}>
-                                      <img
-                                        src={service.service_image}
-                                        alt={service.service_name}
-                                        height={40}
-                                      />
-                                    </Col>
-                                    <Col className=" d-flex flex-column text-end">
-                                      <p className="mb-1 text-dark float-end fw-bold">
-                                        {service.service_name}
-                                      </p>
-                                      <span className="text-muted float-end fs-13">
-                                        Verify Now{" "}
-                                        <i className="ti ti-arrow-narrow-right text-primary fw-bold fs-20 mt-2 mx-1"></i>
-                                      </span>
-                                    </Col>
-                                  </Row>
-                                </div>
-                              </Col>
-                            ))}
-                          </Row>
+                        
                         </>
                       )}
                     </Card.Body>
