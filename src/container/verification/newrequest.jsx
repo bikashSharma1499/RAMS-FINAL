@@ -356,7 +356,7 @@ const VerificationForm = () => {
       sortable: true,
     },
     {
-      name: "Entry Date",
+      name: "Date",
       selector: (row) => row.entry_date,
       sortable: true,
     },
@@ -381,14 +381,12 @@ const VerificationForm = () => {
       selector: (row) => row.verification_code,
       cell: (row) => (
         <>
-          
-            <Button
-              variant="info"
-              onClick={() => handleWithdraw(row.verification_code)}
-            >
-              Continue
-            </Button>
-   
+          <Button
+            variant="info"
+            onClick={() => handleWithdraw(row.verification_code)}
+          >
+            Continue
+          </Button>
         </>
       ),
     },
@@ -408,11 +406,284 @@ const VerificationForm = () => {
         active="New Verification"
       />
 
-      {showList ? (
-        <>
-          <Card>
-            <Card.Body>
-              <Row>
+      <>
+        <Card>
+          <Card.Body>
+            {!selectedService ? (
+              <>
+                <Row>
+                  {services.map((service) => (
+                    <Col lg={4} md={6} sm={6} key={service.service_code}>
+                      <div
+                        style={{
+                          border: "1px solid #ddd",
+                          margin: "5px 0",
+                          borderRadius: "8px",
+                          padding: "16px",
+                          textAlign: "center",
+                          cursor: "pointer",
+                          boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
+                          transition:
+                            "transform 0.3s ease, box-shadow 0.3s ease",
+                        }}
+                        className="service-card"
+                        onClick={() => handleServiceSelection(service)}
+                      >
+                        <Row
+                          style={{ height: "60px" }}
+                          className="align-items-center my-1 "
+                        >
+                          <Col xs={3}>
+                            <img
+                              src={service.service_image}
+                              alt={service.service_name}
+                              height={40}
+                            />
+                          </Col>
+                          <Col className=" d-flex flex-column text-end">
+                            <p className="mb-1 text-dark float-end fw-bold">
+                              {service.service_name}
+                            </p>
+                            <span className="text-muted float-end fs-13">
+                              Verify Now{" "}
+                              <i className="ti ti-arrow-narrow-right text-primary fw-bold fs-20 mt-2 mx-1"></i>
+                            </span>
+                          </Col>
+                        </Row>
+                      </div>
+                    </Col>
+                  ))}
+                </Row>
+              </>
+            ) : (
+              <div>
+                <h5>
+                  {selectedService.service_name}{" "}
+                  {basicDetailsFilled ? (
+                    ""
+                  ) : (
+                    <>
+                      <button
+                        className=" btn-link text-danger border-0 bg-transparent rounded-3"
+                        onClick={() => setSelectedService(false)}
+                      >
+                        Change
+                      </button>
+                    </>
+                  )}
+                </h5>
+
+                <Card className="shadow-sm mb-4">
+                  <Card.Header
+                    style={{
+                      backgroundColor: "#f8f9fa", // Light gray background for professionalism
+                      color: "#212529", // Darker text for contrast
+                      fontWeight: "600", // Slightly bold for emphasis
+                      textTransform: "uppercase", // Capitalize the header text
+                      letterSpacing: "0.5px", // Subtle spacing for modern feel
+                      padding: "15px", // Proper padding for spacing
+                      border: "1px solid #dee2e6", // Thin border for structure
+                      borderRadius: "4px", // Rounded corners for softness
+                      display: "flex", // Flexbox for alignment
+                      alignItems: "center", // Center vertical alignment
+                      justifyContent: "space-between", // Equal spacing
+                    }}
+                  >
+                    <div style={{ display: "flex", alignItems: "center" }}>
+                      <i
+                        className="ti ti-user me-2"
+                        style={{ fontSize: "18px", color: "#6c757d" }} // Subtle icon styling
+                      ></i>
+                      Candidate Basic Details
+                    </div>
+                    <div>
+                      <span
+                        className="badge bg-secondary"
+                        style={{ fontSize: "12px" }}
+                      >
+                        Required Info
+                      </span>
+                    </div>
+                  </Card.Header>
+
+                  <Card.Body>
+                    <Row>
+                      <Col md={4} sm={6}>
+                        <Form.Group>
+                          <Form.Label>Candidate Name</Form.Label>
+                          <Form.Control
+                            name="cndName"
+                            value={candidateDetails.cndName}
+                            autoComplete="off"
+                            onChange={handleChange}
+                            placeholder="Enter candidate name"
+                            isInvalid={!!errors.cndName}
+                          />
+                          <Form.Control.Feedback type="invalid">
+                            {errors.cndName}
+                          </Form.Control.Feedback>
+                        </Form.Group>
+                      </Col>
+                      <Col md={4} sm={6}>
+                        <Form.Group>
+                          <Form.Label>Mobile No</Form.Label>
+                          <Form.Control
+                            name="cndMobile"
+                            value={candidateDetails.cndMobile}
+                            autoComplete="off"
+                            maxLength={10}
+                            onChange={handleChange}
+                            onInput={(e) => {
+                              // Restrict non-numeric input
+                              e.target.value = e.target.value.replace(
+                                /[^0-9]/g,
+                                ""
+                              );
+                            }}
+                            placeholder="Enter mobile number"
+                            isInvalid={!!errors.cndMobile}
+                          />
+                          {errors.cndMobile && (
+                            <Form.Control.Feedback type="invalid">
+                              {errors.cndMobile}
+                            </Form.Control.Feedback>
+                          )}
+                        </Form.Group>
+                      </Col>
+                      <Col md={4} sm={6}>
+                        <Form.Group>
+                          <Form.Label>Mail ID</Form.Label>
+                          <Form.Control
+                            name="cndMail"
+                            value={candidateDetails.cndMail}
+                            autoComplete="off"
+                            maxLength={200}
+                            onChange={handleChange}
+                            placeholder="Enter email"
+                            isInvalid={!!errors.cndMail}
+                          />
+                          <Form.Control.Feedback type="invalid">
+                            {errors.cndMail}
+                          </Form.Control.Feedback>
+                        </Form.Group>
+                      </Col>
+                      <Col
+                        lg={3}
+                        md={4}
+                        sm={6}
+                        className="d-flex align-items-end"
+                      >
+                        {!basicDetailsFilled && (
+                          <>
+                            <button
+                              disabled={submitLoading}
+                              className={`mt-2 ${
+                                basicDetailsFilled ? "btn-update" : "btn-save"
+                              }`}
+                              onClick={handleBasicDetailsSubmit}
+                            >
+                              {!submitLoading ? (
+                                "Submit"
+                              ) : (
+                                <>
+                                  <Spinner
+                                    animation="border"
+                                    role="status"
+                                  ></Spinner>
+                                  Processing...
+                                </>
+                              )}
+                            </button>
+                          </>
+                        )}
+                      </Col>
+                    </Row>
+                  </Card.Body>
+                </Card>
+
+                {basicDetailsFilled ? (
+                  <>
+                    <Row>
+                      <Col lg={7}>
+                        <Card className="shadow border-0">
+                          <Card.Body>
+                            {components.map((comp) => (
+                              <div
+                                key={comp.srv_component_code}
+                                className="mb-4"
+                              >
+                                <div
+                                  className={`p-3 rounded d-flex justify-content-between align-items-center ${
+                                    selectedComponents.includes(comp)
+                                      ? "bg-success text-white shadow-sm"
+                                      : "bg-light text-dark border"
+                                  }`}
+                                  style={{ cursor: "pointer" }}
+                                  onClick={() => handleComponentSelect(comp)}
+                                >
+                                  <span className="fw-bold">
+                                    {comp.component_name}
+                                  </span>
+                                  <span>
+                                    <span className="badge bg-info me-2">
+                                      ₹{comp.amount}
+                                    </span>
+                                    <span className="badge bg-warning">
+                                      TAT: {comp.duration_desc}
+                                    </span>
+                                  </span>
+                                </div>
+                                {selectedComponents.includes(comp) && (
+                                  <div className="mt-3 border p-3 rounded bg-white">
+                                    {renderFormComponent(comp)}
+                                  </div>
+                                )}
+                              </div>
+                            ))}
+                          </Card.Body>
+                        </Card>
+                      </Col>
+                      <Col lg={5}>
+                        <Card className="shadow border-0">
+                          <Card.Header className="bg-dark text-white text-center fw-bold">
+                            Your Billing
+                          </Card.Header>
+                          <Card.Body>
+                            <div className="d-flex justify-content-between mb-3">
+                              <span className="text-secondary">
+                                Gross ({componentCount} Components)
+                              </span>
+                              <span className="fw-bold">₹ {totalGross}</span>
+                            </div>
+                            <div className="d-flex justify-content-between mb-3">
+                              <span className="text-secondary">GST (18%)</span>
+                              <span className="fw-bold">₹ {totalGstAmt}</span>
+                            </div>
+                            <hr />
+                            <div className="d-flex justify-content-between mb-3">
+                              <span className="fw-bold">Total</span>
+                              <span className="fw-bold text-success">
+                                ₹ {totalAmount}
+                              </span>
+                            </div>
+                            <button
+                              onClick={handlePayment}
+                              className="btn-save w-100 fw-bold mt-3"
+                            >
+                              Pay Now
+                            </button>
+                          </Card.Body>
+                        </Card>
+                      </Col>
+                    </Row>
+                  </>
+                ) : (
+                  ""
+                )}
+              </div>
+            )}
+
+            {/* <Row>
                 <Col sm={6}>Pending Verification List</Col>
                 <Col sm={6} className=" text-end">
                   <button
@@ -450,388 +721,129 @@ const VerificationForm = () => {
                     }}
                   />
                 </Col>
-              </Row>
-            </Card.Body>
-          </Card>
-        </>
-      ) : (
-        <>
-          {!paymentPage ? (
-            <div>
-              {!selectedService ? (
-                <>
-                  <Card className="shadow-sm">
-                    <Card.Body>
-                      <h5 className="mb-3 fw-bold">
-                        <span className="text-primary">Choose a Service</span>
-                        <button
-                          onClick={() => setShowList(true)}
-                          className="btn-link ms-2 text-danger border-0 bg-transparent"
-                        >
-                          Cancel
-                        </button>
-                      </h5>
-                      {srvLoading ? (
-                        <>Loading... Please hold on</>
-                      ) : (
-                        <>
-                        
-                        </>
-                      )}
-                    </Card.Body>
-                  </Card>
-                </>
-              ) : (
-                <div>
-                  <h5>
-                    {selectedService.service_name}{" "}
-                    {basicDetailsFilled ? (
-                      ""
-                    ) : (
-                      <>
-                        <button
-                          className=" btn-link text-danger border-0 bg-transparent rounded-3"
-                          onClick={() => setSelectedService(false)}
-                        >
-                          Change
-                        </button>
-                      </>
-                    )}
+              </Row> */}
+
+          </Card.Body>
+        </Card>
+      </>
+
+      <>
+        {paymentPage && (
+          <Row className="justify-content-center">
+            <Col lg={4} md={8} sm={12}>
+              <Card className="shadow border-0">
+                <Card.Body>
+                  {/* Header Section */}
+                  <h5 className="text-center mb-4">
+                    Enter Card Details and Pay
                   </h5>
 
-                  <Card className="shadow-sm mb-4">
-                    <Card.Header
-                      style={{
-                        backgroundColor: "#f8f9fa", // Light gray background for professionalism
-                        color: "#212529", // Darker text for contrast
-                        fontWeight: "600", // Slightly bold for emphasis
-                        textTransform: "uppercase", // Capitalize the header text
-                        letterSpacing: "0.5px", // Subtle spacing for modern feel
-                        padding: "15px", // Proper padding for spacing
-                        border: "1px solid #dee2e6", // Thin border for structure
-                        borderRadius: "4px", // Rounded corners for softness
-                        display: "flex", // Flexbox for alignment
-                        alignItems: "center", // Center vertical alignment
-                        justifyContent: "space-between", // Equal spacing
-                      }}
-                    >
-                      <div style={{ display: "flex", alignItems: "center" }}>
-                        <i
-                          className="ti ti-user me-2"
-                          style={{ fontSize: "18px", color: "#6c757d" }} // Subtle icon styling
-                        ></i>
-                        Candidate Basic Details
-                      </div>
-                      <div>
-                        <span
-                          className="badge bg-secondary"
-                          style={{ fontSize: "12px" }}
-                        >
-                          Required Info
-                        </span>
-                      </div>
-                    </Card.Header>
+                  {/* Payment Details Section */}
+                  <div className="text-center mb-4">
+                    <h5 className="text-muted">Paying to Redchek PVT LTD</h5>
+                    <div className="d-flex justify-content-center align-items-center mb-3">
+                      <span>Purpose of Payment</span>
+                      <span className="mx-2 text-primary">Instapay</span>
+                    </div>
+                    <div className="d-flex justify-content-center align-items-center">
+                      <span>Amount</span>
+                      <span className="mx-2">₹ 469</span>
+                    </div>
+                  </div>
 
-                    <Card.Body>
-                      <Row>
-                        <Col md={4} sm={6}>
-                          <Form.Group>
-                            <Form.Label>Candidate Name</Form.Label>
-                            <Form.Control
-                              name="cndName"
-                              value={candidateDetails.cndName}
-                              autoComplete="off"
-                              onChange={handleChange}
-                              placeholder="Enter candidate name"
-                              isInvalid={!!errors.cndName}
-                            />
-                            <Form.Control.Feedback type="invalid">
-                              {errors.cndName}
-                            </Form.Control.Feedback>
-                          </Form.Group>
-                        </Col>
-                        <Col md={4} sm={6}>
-                          <Form.Group>
-                            <Form.Label>Mobile No</Form.Label>
-                            <Form.Control
-                              name="cndMobile"
-                              value={candidateDetails.cndMobile}
-                              autoComplete="off"
-                              maxLength={10}
-                              onChange={handleChange}
-                              onInput={(e) => {
-                                // Restrict non-numeric input
-                                e.target.value = e.target.value.replace(
-                                  /[^0-9]/g,
-                                  ""
-                                );
-                              }}
-                              placeholder="Enter mobile number"
-                              isInvalid={!!errors.cndMobile}
-                            />
-                            {errors.cndMobile && (
-                              <Form.Control.Feedback type="invalid">
-                                {errors.cndMobile}
-                              </Form.Control.Feedback>
-                            )}
-                          </Form.Group>
-                        </Col>
-                        <Col md={4} sm={6}>
-                          <Form.Group>
-                            <Form.Label>Mail ID</Form.Label>
-                            <Form.Control
-                              name="cndMail"
-                              value={candidateDetails.cndMail}
-                              autoComplete="off"
-                              maxLength={200}
-                              onChange={handleChange}
-                              placeholder="Enter email"
-                              isInvalid={!!errors.cndMail}
-                            />
-                            <Form.Control.Feedback type="invalid">
-                              {errors.cndMail}
-                            </Form.Control.Feedback>
-                          </Form.Group>
-                        </Col>
-                        <Col
-                          lg={3}
-                          md={4}
-                          sm={6}
-                          className="d-flex align-items-end"
-                        >
-                          {!basicDetailsFilled && (
-                            <>
-                              <button
-                                disabled={submitLoading}
-                                className={`mt-2 ${
-                                  basicDetailsFilled ? "btn-update" : "btn-save"
-                                }`}
-                                onClick={handleBasicDetailsSubmit}
-                              >
-                                {!submitLoading ? (
-                                  "Submit"
-                                ) : (
-                                  <>
-                                    <Spinner
-                                      animation="border"
-                                      role="status"
-                                    ></Spinner>
-                                    Processing...
-                                  </>
-                                )}
-                              </button>
-                            </>
-                          )}
-                        </Col>
-                      </Row>
-                    </Card.Body>
-                  </Card>
+                  {/* Card Payment Form */}
+                  <form onSubmit={handleCheckout}>
+                    {/* Card Number */}
+                    <div className="mb-4">
+                      <label htmlFor="cardNumber" className="form-label">
+                        Card Number
+                      </label>
+                      <input
+                        type="text"
+                        id="cardNumber"
+                        className="form-control"
+                        placeholder="Card Number"
+                      />
+                    </div>
 
-                  {basicDetailsFilled ? (
-                    <>
-                      <Row>
-                        <Col lg={7}>
-                          <Card className="shadow border-0">
-                            <Card.Body>
-                              {components.map((comp) => (
-                                <div
-                                  key={comp.srv_component_code}
-                                  className="mb-4"
-                                >
-                                  <div
-                                    className={`p-3 rounded d-flex justify-content-between align-items-center ${
-                                      selectedComponents.includes(comp)
-                                        ? "bg-success text-white shadow-sm"
-                                        : "bg-light text-dark border"
-                                    }`}
-                                    style={{ cursor: "pointer" }}
-                                    onClick={() => handleComponentSelect(comp)}
-                                  >
-                                    <span className="fw-bold">
-                                      {comp.component_name}
-                                    </span>
-                                    <span>
-                                      <span className="badge bg-info me-2">
-                                        ₹{comp.amount}
-                                      </span>
-                                      <span className="badge bg-warning">
-                                        TAT: {comp.duration_desc}
-                                      </span>
-                                    </span>
-                                  </div>
-                                  {selectedComponents.includes(comp) && (
-                                    <div className="mt-3 border p-3 rounded bg-white">
-                                      {renderFormComponent(comp)}
-                                    </div>
-                                  )}
-                                </div>
-                              ))}
-                            </Card.Body>
-                          </Card>
-                        </Col>
-                        <Col lg={5}>
-                          <Card className="shadow border-0">
-                            <Card.Header className="bg-dark text-white text-center fw-bold">
-                              Your Billing
-                            </Card.Header>
-                            <Card.Body>
-                              <div className="d-flex justify-content-between mb-3">
-                                <span className="text-secondary">
-                                  Gross ({componentCount} Components)
-                                </span>
-                                <span className="fw-bold">₹ {totalGross}</span>
-                              </div>
-                              <div className="d-flex justify-content-between mb-3">
-                                <span className="text-secondary">
-                                  GST (18%)
-                                </span>
-                                <span className="fw-bold">₹ {totalGstAmt}</span>
-                              </div>
-                              <hr />
-                              <div className="d-flex justify-content-between mb-3">
-                                <span className="fw-bold">Total</span>
-                                <span className="fw-bold text-success">
-                                  ₹ {totalAmount}
-                                </span>
-                              </div>
-                              <button
-                                onClick={handlePayment}
-                                className="btn-save w-100 fw-bold mt-3"
-                              >
-                                Pay Now
-                              </button>
-                            </Card.Body>
-                          </Card>
-                        </Col>
-                      </Row>
-                    </>
-                  ) : (
-                    ""
-                  )}
-                </div>
-              )}
-            </div>
-          ) : (
-            <>
-              <Row className="justify-content-center">
-                <Col lg={4} md={8} sm={12}>
-                  <Card className="shadow border-0">
-                    <Card.Body>
-                      {/* Header Section */}
-                      <h5 className="text-center mb-4">
-                        Enter Card Details and Pay
-                      </h5>
-
-                      {/* Payment Details Section */}
-                      <div className="text-center mb-4">
-                        <h5 className="text-muted">
-                          Paying to Redchek PVT LTD
-                        </h5>
-                        <div className="d-flex justify-content-center align-items-center mb-3">
-                          <span>Purpose of Payment</span>
-                          <span className="mx-2 text-primary">Instapay</span>
-                        </div>
-                        <div className="d-flex justify-content-center align-items-center">
-                          <span>Amount</span>
-                          <span className="mx-2">₹ 469</span>
-                        </div>
-                      </div>
-
-                      {/* Card Payment Form */}
-                      <form onSubmit={handleCheckout}>
-                        {/* Card Number */}
-                        <div className="mb-4">
-                          <label htmlFor="cardNumber" className="form-label">
-                            Card Number
-                          </label>
-                          <input
-                            type="text"
-                            id="cardNumber"
-                            className="form-control"
-                            placeholder="Card Number"
-                          />
-                        </div>
-
-                        {/* Expiry Date and CVV */}
-                        <div className="row">
-                          <div className="col-md-6 mb-3">
-                            <label htmlFor="expiry" className="form-label">
-                              Expiry
-                            </label>
-                            <input
-                              type="text"
-                              id="expiry"
-                              className="form-control"
-                              placeholder="MM/YY"
-                            />
-                          </div>
-                          <div className="col-md-6 mb-3">
-                            <label htmlFor="cvv" className="form-label">
-                              CVV
-                            </label>
-                            <input
-                              type="text"
-                              id="cvv"
-                              className="form-control"
-                              placeholder="CVV"
-                            />
-                          </div>
-                        </div>
-
-                        {/* Payment Button */}
-                        <div className="text-center mb-4">
-                          <button
-                            type="submit"
-                            className="btn btn-success btn-lg w-100"
-                          >
-                            {" "}
-                            ₹ 469
-                          </button>
-                        </div>
-                      </form>
-
-                      {/* Terms & Conditions Section */}
-                      <div className="text-center">
-                        <a href="#" className="text-muted">
-                          Terms of Service and Refund Policy
-                        </a>
-                      </div>
-
-                      {/* Footer with Payment Method Logos */}
-                      <div className="text-center mt-4">
-                        <img
-                          src="https://www.redcheckes.com/pay/mc.png"
-                          height={20}
-                          alt="Mastercard"
-                          className="mx-2"
-                        />
-                        <img
-                          src="https://www.redcheckes.com/pay/rp.png"
-                          height={20}
-                          alt="RuPay"
-                          className="mx-2"
-                        />
-                        <img
-                          src="https://www.redcheckes.com/pay/visa.png"
-                          height={20}
-                          alt="Visa"
-                          className="mx-2"
-                        />
-                        <img
-                          src="https://www.redcheckes.com/pay/upi.png"
-                          height={20}
-                          alt="UPI"
-                          className="mx-2"
+                    {/* Expiry Date and CVV */}
+                    <div className="row">
+                      <div className="col-md-6 mb-3">
+                        <label htmlFor="expiry" className="form-label">
+                          Expiry
+                        </label>
+                        <input
+                          type="text"
+                          id="expiry"
+                          className="form-control"
+                          placeholder="MM/YY"
                         />
                       </div>
-                    </Card.Body>
-                  </Card>
-                </Col>
-              </Row>
-            </>
-          )}
-        </>
-      )}
+                      <div className="col-md-6 mb-3">
+                        <label htmlFor="cvv" className="form-label">
+                          CVV
+                        </label>
+                        <input
+                          type="text"
+                          id="cvv"
+                          className="form-control"
+                          placeholder="CVV"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Payment Button */}
+                    <div className="text-center mb-4">
+                      <button
+                        type="submit"
+                        className="btn btn-success btn-lg w-100"
+                      >
+                        {" "}
+                        ₹ 469
+                      </button>
+                    </div>
+                  </form>
+
+                  {/* Terms & Conditions Section */}
+                  <div className="text-center">
+                    <a href="#" className="text-muted">
+                      Terms of Service and Refund Policy
+                    </a>
+                  </div>
+
+                  {/* Footer with Payment Method Logos */}
+                  <div className="text-center mt-4">
+                    <img
+                      src="https://www.redcheckes.com/pay/mc.png"
+                      height={20}
+                      alt="Mastercard"
+                      className="mx-2"
+                    />
+                    <img
+                      src="https://www.redcheckes.com/pay/rp.png"
+                      height={20}
+                      alt="RuPay"
+                      className="mx-2"
+                    />
+                    <img
+                      src="https://www.redcheckes.com/pay/visa.png"
+                      height={20}
+                      alt="Visa"
+                      className="mx-2"
+                    />
+                    <img
+                      src="https://www.redcheckes.com/pay/upi.png"
+                      height={20}
+                      alt="UPI"
+                      className="mx-2"
+                    />
+                  </div>
+                </Card.Body>
+              </Card>
+            </Col>
+          </Row>
+        )}
+      </>
     </>
   );
 };
