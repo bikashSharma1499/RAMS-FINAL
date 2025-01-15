@@ -1,7 +1,17 @@
-import { Fragment, useEffect, useState } from 'react';
-import { Alert, Badge, Button, ButtonGroup, Dropdown, Form, ListGroup, Modal, Row } from 'react-bootstrap';
-import { Link,useLocation } from 'react-router-dom';
-import { MENUITEMS } from '../sidebar/sidemenu/sidemenu';
+import { Fragment, useEffect, useState } from "react";
+import {
+  Alert,
+  Badge,
+  Button,
+  ButtonGroup,
+  Dropdown,
+  Form,
+  ListGroup,
+  Modal,
+  Row,
+} from "react-bootstrap";
+import { Link, useLocation } from "react-router-dom";
+import { MENUITEMS } from "../sidebar/sidemenu/sidemenu";
 import { connect } from "react-redux";
 import { ThemeChanger } from "../../../redux/action";
 import desktoplogo from "../../../assets/images/brand-logos/desktop-logo.png";
@@ -31,452 +41,496 @@ import googledocs from "../../../assets/images/apps/google-docs.png";
 import google from "../../../assets/images/apps/google.png";
 import translate from "../../../assets/images/apps/translate.png";
 import googlesheets from "../../../assets/images/apps/google-sheets.png";
-import store from '../../../redux/store';
-import { useNavigate } from 'react-router-dom';
-import { GetLoginInfo } from '../../../container/auth/logindata';
-
+import store from "../../../redux/store";
+import { useNavigate } from "react-router-dom";
+import { GetLoginInfo } from "../../../container/auth/logindata";
 
 const Header = ({ local_varaiable, ThemeChanger }) => {
-    const navigate=useNavigate();
-    const [showa1, setShowa1] = useState(true);
-    const toggleShowa1 = () => setShowa1(!showa1);
+  const navigate = useNavigate();
+  const [showa1, setShowa1] = useState(true);
+  const toggleShowa1 = () => setShowa1(!showa1);
 
-    const [showa2, setShowa2] = useState(true);
-    const toggleShowa2 = () => setShowa2(!showa2);
+  const [showa2, setShowa2] = useState(true);
+  const toggleShowa2 = () => setShowa2(!showa2);
 
-    const [showa3, setShowa3] = useState(true);
-    const toggleShowa3 = () => setShowa3(!showa3);
+  const [showa3, setShowa3] = useState(true);
+  const toggleShowa3 = () => setShowa3(!showa3);
 
-    const handleLogOut = () =>{
-    localStorage.removeItem('userAuth');
+  const handleLogOut = () => {
+    localStorage.removeItem("userAuth");
+    localStorage.removeItem('userKey');
+    localStorage.removeItem('next_step');
+    localStorage.removeItem('otpUser');
+    localStorage.removeItem('rentOtp');
+    localStorage.removeItem('rg_rcd');
+    localStorage.removeItem('userType');
     navigate(`${import.meta.env.BASE_URL}auth/logincheck`);
+  };
+
+  const location = useLocation();
+
+  // for search modal
+  const [show, setShow] = useState(false);
+
+  const handleClose = () => setShow(false);
+  const handleShow = () => setShow(true);
+  ///****fullscreeen */
+  const [fullScreen, setFullScreen] = useState(false);
+
+  const toggleFullScreen = () => {
+    const elem = document.documentElement;
+
+    if (!document.fullscreenElement) {
+      elem.requestFullscreen().then(() => setFullScreen(true));
+    } else {
+      document.exitFullscreen().then(() => setFullScreen(false));
     }
+  };
 
+  const handleFullscreenChange = () => {
+    setFullScreen(!!document.fullscreenElement);
+  };
 
-    const location = useLocation();
-   
-   
-    // for search modal
-    const [show, setShow] = useState(false);
+  useEffect(() => {
+    document.addEventListener("fullscreenchange", handleFullscreenChange);
 
-    const handleClose = () => setShow(false);
-    const handleShow = () => setShow(true);
-///****fullscreeen */
-    const [fullScreen, setFullScreen] = useState(false);
-
-
-
-    const toggleFullScreen = () => {
-        const elem = document.documentElement;
-
-        if (!document.fullscreenElement) {
-            elem.requestFullscreen().then(() => setFullScreen(true));
-        } else {
-            document.exitFullscreen().then(() => setFullScreen(false));
-        }
+    return () => {
+      document.removeEventListener("fullscreenchange", handleFullscreenChange);
     };
+  }, []);
+  ////
+  //Search functionality
+  const [show1, setShow1] = useState(false);
+  const [InputValue, setInputValue] = useState("");
+  const [show2, setShow2] = useState(false);
+  const [searchcolor, setsearchcolor] = useState("text-dark");
+  const [searchval, setsearchval] = useState("Type something");
+  const [NavData, setNavData] = useState([]);
+  const [user, setUser] = useState("Loading..");
+  document.addEventListener("click", function () {
+    document.querySelector(".search-result")?.classList.add("d-none");
+  });
+  const myfunction = (inputvalue) => {
+    document.querySelector(".search-result")?.classList.remove("d-none");
 
-    const handleFullscreenChange = () => {
-        setFullScreen(!!document.fullscreenElement);
-    };
+    const i = [];
+    const allElement2 = [];
 
-    useEffect(() => {
-        document.addEventListener('fullscreenchange', handleFullscreenChange);
-
-        return () => {
-            document.removeEventListener('fullscreenchange', handleFullscreenChange);
-        };
-    }, []);
-    ////
-    //Search functionality
-    const [show1, setShow1] = useState(false);
-    const [InputValue, setInputValue] = useState("");
-    const [show2, setShow2] = useState(false);
-    const [searchcolor, setsearchcolor] = useState("text-dark");
-    const [searchval, setsearchval] = useState("Type something");
-    const [NavData, setNavData] = useState([]);
-    const[user, setUser] = useState("Loading..");
-    document.addEventListener("click", function () {
-        document.querySelector(".search-result")?.classList.add("d-none");
-    });
-    const myfunction = (inputvalue) => {
-        document.querySelector(".search-result")?.classList.remove("d-none");
-
-        const i = [];
-        const allElement2 = [];
-
-        MENUITEMS.map(mainlevel => {
-            if (mainlevel.Items) {
-                setShow1(true);
-                mainlevel.Items.map(sublevel => {
-
-                    if (sublevel.children) {
-                        sublevel.children.map((sublevel1) => {
-
-                            i.push(sublevel1);
-                            if (sublevel1.children) {
-                                sublevel1.children.map((sublevel2) => {
-
-                                    i.push(sublevel2);
-                                    return sublevel2;
-                                });
-                            }
-                            return sublevel1;
-                        });
-                    }
-                    return sublevel;
+    MENUITEMS.map((mainlevel) => {
+      if (mainlevel.Items) {
+        setShow1(true);
+        mainlevel.Items.map((sublevel) => {
+          if (sublevel.children) {
+            sublevel.children.map((sublevel1) => {
+              i.push(sublevel1);
+              if (sublevel1.children) {
+                sublevel1.children.map((sublevel2) => {
+                  i.push(sublevel2);
+                  return sublevel2;
                 });
-            }
-            return mainlevel;
-        }
-        );
-        for (const allElement of i) {
-            if (allElement.title.toLowerCase().includes(inputvalue.toLowerCase())) {
-                if (allElement.title.toLowerCase().startsWith(inputvalue.toLowerCase())) {
-                    setShow2(true);
-                    allElement2.push(allElement);
-                }
-            }
-        }
-        if (!allElement2.length || inputvalue === "") {
-            if (inputvalue === "") {
-                setShow2(false);
-                setsearchval("Type something");
-                setsearchcolor('text-dark');
-            }
-            if (!allElement2.length) {
-                setShow2(false);
-                setsearchcolor('text-danger');
-                setsearchval("There is no component with this name");
-            }
-        }
-        setNavData(allElement2);
-
-    };
-
-    const Switchericon = () => {
-        document.querySelector(".offcanvas-end")?.classList.toggle("show");
-        const Rightside = document.querySelector(".offcanvas-end");
-        Rightside.style.insetInlineEnd = "0px";
-        if (document.querySelector(".switcher-backdrop")?.classList.contains('d-none')) {
-            document.querySelector(".switcher-backdrop")?.classList.add("d-block");
-            document.querySelector(".switcher-backdrop")?.classList.remove("d-none");
-        }
-    };
-
-    //Dark Model
-    const ToggleDark = () => {
-
-        ThemeChanger({
-            ...local_varaiable,
-            "dataThemeMode": local_varaiable.dataThemeMode == 'dark' ? 'light' : 'dark',
-            "dataHeaderStyles": local_varaiable.dataThemeMode == 'dark' ? 'light' : 'dark',
-            "dataMenuStyles": local_varaiable.dataNavLayout == 'horizontal' ? local_varaiable.dataThemeMode == 'dark' ? 'light' : 'dark' : "dark"
-
-        });
-        const theme = store.getState();
-
-        if (theme.dataThemeMode != 'dark') {
-
-            ThemeChanger({
-                ...theme,
-                "bodyBg1": '',
-                "bodyBg2": '',
-                "darkBg": '',
-                "inputBorder": '',
+              }
+              return sublevel1;
             });
-            localStorage.removeItem("ynexdarktheme");
-            localStorage.removeItem("darkBgRGB1");
-            localStorage.removeItem("darkBgRGB2");
-            localStorage.removeItem("darkBgRGB3");
-            localStorage.removeItem("darkBgRGB4");
-            localStorage.removeItem("ynexMenu");
-            localStorage.removeItem("ynexHeader");
+          }
+          return sublevel;
+        });
+      }
+      return mainlevel;
+    });
+    for (const allElement of i) {
+      if (allElement.title.toLowerCase().includes(inputvalue.toLowerCase())) {
+        if (
+          allElement.title.toLowerCase().startsWith(inputvalue.toLowerCase())
+        ) {
+          setShow2(true);
+          allElement2.push(allElement);
         }
-        else {
-            localStorage.setItem("ynexdarktheme", "dark");
-            localStorage.removeItem("ynexlighttheme");
-            localStorage.removeItem("ynexHeader");
-            localStorage.removeItem("ynexMenu");
-
-        }
-
-    };
-
-    function menuClose() {
-        const theme = store.getState();
-        ThemeChanger({ ...theme, "toggled": "close" });
+      }
     }
+    if (!allElement2.length || inputvalue === "") {
+      if (inputvalue === "") {
+        setShow2(false);
+        setsearchval("Type something");
+        setsearchcolor("text-dark");
+      }
+      if (!allElement2.length) {
+        setShow2(false);
+        setsearchcolor("text-danger");
+        setsearchval("There is no component with this name");
+      }
+    }
+    setNavData(allElement2);
+  };
 
-    const toggleSidebar = () => {
-        const theme = store.getState();
-        const sidemenuType = theme.dataNavLayout;
-        if (window.innerWidth >= 992) {
-            if (sidemenuType === 'vertical') {
-                const verticalStyle = theme.dataVerticalStyle;
-                const navStyle = theme.dataNavStyle;
-                switch (verticalStyle) {
-                    // closed
-                    case "closed":
-                        ThemeChanger({ ...theme, "dataNavStyle": "" });
-                        if (theme.toggled === "close-menu-close") {
-                            ThemeChanger({ ...theme, "toggled": "" });
-                        } else {
-                            ThemeChanger({ ...theme, "toggled": "close-menu-close" });
-                        }
-                        break;
-                    // icon-overlay
-                    case "overlay":
-                        ThemeChanger({ ...theme, "dataNavStyle": "" });
-                        if (theme.toggled === "icon-overlay-close") {
-                            ThemeChanger({ ...theme, "toggled": "" });
-                        } else {
-                            if (window.innerWidth >= 992) {
-                                ThemeChanger({ ...theme, "toggled": "icon-overlay-close" });
-                            }
-                        }
-                        break;
-                    // icon-text
-                    case "icontext":
-                        ThemeChanger({ ...theme, "dataNavStyle": "" });
-                        if (theme.toggled === "icon-text-close") {
-                            ThemeChanger({ ...theme, "toggled": "" });
-                        } else {
-                            ThemeChanger({ ...theme, "toggled": "icon-text-close" });
-                        }
-                        break;
-                    // doublemenu
-                    case "doublemenu":
-                        ThemeChanger({ ...theme, "dataNavStyle": "" });
-                        if (theme.toggled === "double-menu-open") {
-                            ThemeChanger({ ...theme, "toggled": "double-menu-close" });
-                        } else {
-                            const sidemenu = document.querySelector(".side-menu__item.active");
-                            if (sidemenu) {
-                                if (sidemenu.nextElementSibling) {
-                                    sidemenu.nextElementSibling.classList.add("double-menu-active");
-                                    ThemeChanger({ ...theme, "toggled": "double-menu-open" });
-                                } else {
+  const Switchericon = () => {
+    document.querySelector(".offcanvas-end")?.classList.toggle("show");
+    const Rightside = document.querySelector(".offcanvas-end");
+    Rightside.style.insetInlineEnd = "0px";
+    if (
+      document.querySelector(".switcher-backdrop")?.classList.contains("d-none")
+    ) {
+      document.querySelector(".switcher-backdrop")?.classList.add("d-block");
+      document.querySelector(".switcher-backdrop")?.classList.remove("d-none");
+    }
+  };
 
-                                    ThemeChanger({ ...theme, "toggled": "double-menu-close" });
-                                }
-                            }
-                        }
+  //Dark Model
+  const ToggleDark = () => {
+    ThemeChanger({
+      ...local_varaiable,
+      dataThemeMode: local_varaiable.dataThemeMode == "dark" ? "light" : "dark",
+      dataHeaderStyles:
+        local_varaiable.dataThemeMode == "dark" ? "light" : "dark",
+      dataMenuStyles:
+        local_varaiable.dataNavLayout == "horizontal"
+          ? local_varaiable.dataThemeMode == "dark"
+            ? "light"
+            : "dark"
+          : "dark",
+    });
+    const theme = store.getState();
 
-                        break;
-                    // detached
-                    case "detached":
-                        if (theme.toggled === "detached-close") {
-                            ThemeChanger({ ...theme, "toggled": "" });
-                        } else {
-                            ThemeChanger({ ...theme, "toggled": "detached-close" });
-                        }
-                        break;
-                    // default
-                    case "default":
-                        ThemeChanger({ ...theme, "toggled": "" });
+    if (theme.dataThemeMode != "dark") {
+      ThemeChanger({
+        ...theme,
+        bodyBg1: "",
+        bodyBg2: "",
+        darkBg: "",
+        inputBorder: "",
+      });
+      localStorage.removeItem("ynexdarktheme");
+      localStorage.removeItem("darkBgRGB1");
+      localStorage.removeItem("darkBgRGB2");
+      localStorage.removeItem("darkBgRGB3");
+      localStorage.removeItem("darkBgRGB4");
+      localStorage.removeItem("ynexMenu");
+      localStorage.removeItem("ynexHeader");
+    } else {
+      localStorage.setItem("ynexdarktheme", "dark");
+      localStorage.removeItem("ynexlighttheme");
+      localStorage.removeItem("ynexHeader");
+      localStorage.removeItem("ynexMenu");
+    }
+  };
 
-                }
-                switch (navStyle) {
-                    case "menu-click":
-                        if (theme.toggled === "menu-click-closed") {
-                            ThemeChanger({ ...theme, "toggled": "" });
-                        }
-                        else {
-                            ThemeChanger({ ...theme, "toggled": "menu-click-closed" });
-                        }
-                        break;
-                    // icon-overlay
-                    case "menu-hover":
-                        if (theme.toggled === "menu-hover-closed") {
-                            ThemeChanger({ ...theme, "toggled": "" });
-                        } else {
-                            ThemeChanger({ ...theme, "toggled": "menu-hover-closed" });
+  function menuClose() {
+    const theme = store.getState();
+    ThemeChanger({ ...theme, toggled: "close" });
+  }
 
-                        }
-                        break;
-                    case "icon-click":
-                        if (theme.toggled === "icon-click-closed") {
-                            ThemeChanger({ ...theme, "toggled": "" });
-                        } else {
-                            ThemeChanger({ ...theme, "toggled": "icon-click-closed" });
-
-                        }
-                        break;
-                    case "icon-hover":
-                        if (theme.toggled === "icon-hover-closed") {
-                            ThemeChanger({ ...theme, "toggled": "" });
-                        } else {
-                            ThemeChanger({ ...theme, "toggled": "icon-hover-closed" });
-
-                        }
-                        break;
-                }
-            }
-        }
-        else {
-            if (theme.toggled === "close") {
-                ThemeChanger({ ...theme, "toggled": "open" });
-
-                setTimeout(() => {
-                    if (theme.toggled == "open") {
-                        const overlay = document.querySelector("#responsive-overlay");
-
-                        if (overlay) {
-                            overlay.classList.add("active");
-                            overlay.addEventListener("click", () => {
-                                const overlay = document.querySelector("#responsive-overlay");
-
-                                if (overlay) {
-                                    overlay.classList.remove("active");
-                                    menuClose();
-                                }
-                            });
-                        }
-                    }
-
-                    window.addEventListener("resize", () => {
-                        if (window.screen.width >= 992) {
-                            const overlay = document.querySelector("#responsive-overlay");
-
-                            if (overlay) {
-                                overlay.classList.remove("active");
-                            }
-                        }
-                    });
-                }, 100);
+  const toggleSidebar = () => {
+    const theme = store.getState();
+    const sidemenuType = theme.dataNavLayout;
+    if (window.innerWidth >= 992) {
+      if (sidemenuType === "vertical") {
+        const verticalStyle = theme.dataVerticalStyle;
+        const navStyle = theme.dataNavStyle;
+        switch (verticalStyle) {
+          // closed
+          case "closed":
+            ThemeChanger({ ...theme, dataNavStyle: "" });
+            if (theme.toggled === "close-menu-close") {
+              ThemeChanger({ ...theme, toggled: "" });
             } else {
-                ThemeChanger({ ...theme, "toggled": "close" });
+              ThemeChanger({ ...theme, toggled: "close-menu-close" });
             }
-        }
-    };
-    const cartProduct = [
-        {
-            id: 1,
-            src: product1,
-            name: 'SomeThing Phone',
-            price: '$1,299.00',
-            color: 'Metallic Blue',
-            text: '6gb Ram',
-            class: ''
-        },
-        {
-            id: 2,
-            src: product3,
-            name: 'Stop Watch',
-            price: '$179.29',
-            color: 'Analog',
-            text: 'Free shipping',
-            class: 'badge bg-pink-transparent fs-10',
-        },
-        {
-            id: 3,
-            src: product5,
-            name: 'Photo Frame',
-            price: '$29.00',
-            color: 'Decorative',
-            text: '',
-            class: '',
-        },
-        {
-            id: 4,
-            src: product4,
-            name: 'Kikon Camera',
-            price: '$4,999.00',
-            color: 'Black',
-            text: '50MM',
-            class: '',
-        },
-        {
-            id: 5,
-            src: product6,
-            name: 'Canvas Shoes',
-            price: '$129.00',
-            color: 'Gray',
-            text: 'Sports',
-            class: ''
-        },
-    ];
-
-    const [cartItems, setCartItems] = useState([...cartProduct]);
-    const [cartItemCount, setCartItemCount] = useState(cartProduct.length);
-
-    const handleRemove = (itemId) => {
-        const updatedCart = cartItems.filter((item) => item.id !== itemId);
-        setCartItems(updatedCart);
-        setCartItemCount(updatedCart.length);
-    };
-
-    const initialNotifications = [
-        { id: 1, avatarColor: 'primary', icon: 'ti-gift', text1: 'Your Order Has Been Shipped', text2: 'Order No: 123456 Has Shipped To YourDelivery Address', class: '', class1: '' },
-        { id: 2, avatarColor: 'secondary', icon: 'ti-discount-2', text1: 'Discount Available', text2: 'Discount Available On Selected Products', class: '', class1: '' },
-        { id: 3, avatarColor: 'pink', icon: 'ti-user-check', text1: 'Account Has Been Verified', text2: 'Your Account Has Been Verified Successfully', class: '', class1: '' },
-        { id: 4, avatarColor: 'warning', icon: 'ti-circle-check', text1: 'Order Placed ', text2: 'Order Placed Successflly', class: 'text-warning', class1: ' ID:1116773' },
-        { id: 5, avatarColor: 'success', icon: 'ti-clock', text1: 'Order Delayed', text2: 'Order Delayed Unfortunately', class: 'text-success', class1: ' ID:7731116' }
-    ];
-
-    const [notifications, setNotifications] = useState([...initialNotifications]);
-
-    const handleNotificationClose = (index) => {
-        // Create a copy of the notifications array and remove the item at the specified index
-        const updatedNotifications = [...notifications];
-        updatedNotifications.splice(index, 1);
-        setNotifications(updatedNotifications);
-    };
-   
-
-    useEffect(() => {
-        if (location.state?.fetchData) {
-          const fetchUserData = async () => {
-            try {
-              const userData = await GetLoginInfo();
-              setUser(userData?.userName || "");
-            } catch (error) {
-              console.error("Error fetching login info:", error);
-              setUser("Error loading user");
+            break;
+          // icon-overlay
+          case "overlay":
+            ThemeChanger({ ...theme, dataNavStyle: "" });
+            if (theme.toggled === "icon-overlay-close") {
+              ThemeChanger({ ...theme, toggled: "" });
+            } else {
+              if (window.innerWidth >= 992) {
+                ThemeChanger({ ...theme, toggled: "icon-overlay-close" });
+              }
             }
-          };
-    
-          fetchUserData();
+            break;
+          // icon-text
+          case "icontext":
+            ThemeChanger({ ...theme, dataNavStyle: "" });
+            if (theme.toggled === "icon-text-close") {
+              ThemeChanger({ ...theme, toggled: "" });
+            } else {
+              ThemeChanger({ ...theme, toggled: "icon-text-close" });
+            }
+            break;
+          // doublemenu
+          case "doublemenu":
+            ThemeChanger({ ...theme, dataNavStyle: "" });
+            if (theme.toggled === "double-menu-open") {
+              ThemeChanger({ ...theme, toggled: "double-menu-close" });
+            } else {
+              const sidemenu = document.querySelector(
+                ".side-menu__item.active"
+              );
+              if (sidemenu) {
+                if (sidemenu.nextElementSibling) {
+                  sidemenu.nextElementSibling.classList.add(
+                    "double-menu-active"
+                  );
+                  ThemeChanger({ ...theme, toggled: "double-menu-open" });
+                } else {
+                  ThemeChanger({ ...theme, toggled: "double-menu-close" });
+                }
+              }
+            }
+
+            break;
+          // detached
+          case "detached":
+            if (theme.toggled === "detached-close") {
+              ThemeChanger({ ...theme, toggled: "" });
+            } else {
+              ThemeChanger({ ...theme, toggled: "detached-close" });
+            }
+            break;
+          // default
+          case "default":
+            ThemeChanger({ ...theme, toggled: "" });
         }
-      }, [location.state]);
-   
-    return (
-        <Fragment>
-            <header className="app-header">
+        switch (navStyle) {
+          case "menu-click":
+            if (theme.toggled === "menu-click-closed") {
+              ThemeChanger({ ...theme, toggled: "" });
+            } else {
+              ThemeChanger({ ...theme, toggled: "menu-click-closed" });
+            }
+            break;
+          // icon-overlay
+          case "menu-hover":
+            if (theme.toggled === "menu-hover-closed") {
+              ThemeChanger({ ...theme, toggled: "" });
+            } else {
+              ThemeChanger({ ...theme, toggled: "menu-hover-closed" });
+            }
+            break;
+          case "icon-click":
+            if (theme.toggled === "icon-click-closed") {
+              ThemeChanger({ ...theme, toggled: "" });
+            } else {
+              ThemeChanger({ ...theme, toggled: "icon-click-closed" });
+            }
+            break;
+          case "icon-hover":
+            if (theme.toggled === "icon-hover-closed") {
+              ThemeChanger({ ...theme, toggled: "" });
+            } else {
+              ThemeChanger({ ...theme, toggled: "icon-hover-closed" });
+            }
+            break;
+        }
+      }
+    } else {
+      if (theme.toggled === "close") {
+        ThemeChanger({ ...theme, toggled: "open" });
 
-                <div className="main-header-container container-fluid">
-                    <div className="header-content-left">
+        setTimeout(() => {
+          if (theme.toggled == "open") {
+            const overlay = document.querySelector("#responsive-overlay");
 
-                        <div className="header-element">
-                            <div className="horizontal-logo">
-                                <Link to={`${import.meta.env.BASE_URL}dashboards/crm/`} className="header-logo">
-                                    <img src={desktoplogo} alt="logo" className="desktop-logo" />
-                                    <img src={togglelogo} alt="logo" className="toggle-logo" />
-                                    <img src={desktopdark} alt="logo" className="desktop-dark" />
-                                    <img src={toggledark} alt="logo" className="toggle-dark" />
-                                    <img src={desktopwhite} alt="logo" className="desktop-white" />
-                                    <img src={togglewhite} alt="logo" className="toggle-white" />
-                                </Link>
-                            </div>
-                        </div>
-                        <div className="header-element">
-                            <Link aria-label="Hide Sidebar" onClick={() => toggleSidebar()}
-                                className="sidemenu-toggle header-link animated-arrow hor-toggle horizontal-navtoggle"
-                                data-bs-toggle="sidebar" to="#"><span></span></Link>
+            if (overlay) {
+              overlay.classList.add("active");
+              overlay.addEventListener("click", () => {
+                const overlay = document.querySelector("#responsive-overlay");
 
-                        </div>
+                if (overlay) {
+                  overlay.classList.remove("active");
+                  menuClose();
+                }
+              });
+            }
+          }
 
-                    </div>
+          window.addEventListener("resize", () => {
+            if (window.screen.width >= 992) {
+              const overlay = document.querySelector("#responsive-overlay");
 
-                    <div className="header-content-right">
+              if (overlay) {
+                overlay.classList.remove("active");
+              }
+            }
+          });
+        }, 100);
+      } else {
+        ThemeChanger({ ...theme, toggled: "close" });
+      }
+    }
+  };
+  const cartProduct = [
+    {
+      id: 1,
+      src: product1,
+      name: "SomeThing Phone",
+      price: "$1,299.00",
+      color: "Metallic Blue",
+      text: "6gb Ram",
+      class: "",
+    },
+    {
+      id: 2,
+      src: product3,
+      name: "Stop Watch",
+      price: "$179.29",
+      color: "Analog",
+      text: "Free shipping",
+      class: "badge bg-pink-transparent fs-10",
+    },
+    {
+      id: 3,
+      src: product5,
+      name: "Photo Frame",
+      price: "$29.00",
+      color: "Decorative",
+      text: "",
+      class: "",
+    },
+    {
+      id: 4,
+      src: product4,
+      name: "Kikon Camera",
+      price: "$4,999.00",
+      color: "Black",
+      text: "50MM",
+      class: "",
+    },
+    {
+      id: 5,
+      src: product6,
+      name: "Canvas Shoes",
+      price: "$129.00",
+      color: "Gray",
+      text: "Sports",
+      class: "",
+    },
+  ];
 
-                        {/* <div className="header-element header-search">
+  const [cartItems, setCartItems] = useState([...cartProduct]);
+  const [cartItemCount, setCartItemCount] = useState(cartProduct.length);
+
+  const handleRemove = (itemId) => {
+    const updatedCart = cartItems.filter((item) => item.id !== itemId);
+    setCartItems(updatedCart);
+    setCartItemCount(updatedCart.length);
+  };
+
+  const initialNotifications = [
+    {
+      id: 1,
+      avatarColor: "primary",
+      icon: "ti-gift",
+      text1: "Your Order Has Been Shipped",
+      text2: "Order No: 123456 Has Shipped To YourDelivery Address",
+      class: "",
+      class1: "",
+    },
+    {
+      id: 2,
+      avatarColor: "secondary",
+      icon: "ti-discount-2",
+      text1: "Discount Available",
+      text2: "Discount Available On Selected Products",
+      class: "",
+      class1: "",
+    },
+    {
+      id: 3,
+      avatarColor: "pink",
+      icon: "ti-user-check",
+      text1: "Account Has Been Verified",
+      text2: "Your Account Has Been Verified Successfully",
+      class: "",
+      class1: "",
+    },
+    {
+      id: 4,
+      avatarColor: "warning",
+      icon: "ti-circle-check",
+      text1: "Order Placed ",
+      text2: "Order Placed Successflly",
+      class: "text-warning",
+      class1: " ID:1116773",
+    },
+    {
+      id: 5,
+      avatarColor: "success",
+      icon: "ti-clock",
+      text1: "Order Delayed",
+      text2: "Order Delayed Unfortunately",
+      class: "text-success",
+      class1: " ID:7731116",
+    },
+  ];
+
+  const [notifications, setNotifications] = useState([...initialNotifications]);
+
+  const handleNotificationClose = (index) => {
+    // Create a copy of the notifications array and remove the item at the specified index
+    const updatedNotifications = [...notifications];
+    updatedNotifications.splice(index, 1);
+    setNotifications(updatedNotifications);
+  };
+
+  useEffect(() => {
+    if (location.state?.fetchData) {
+      const fetchUserData = async () => {
+        try {
+          const userData = await GetLoginInfo();
+          setUser(userData?.userName || "");
+        } catch (error) {
+          console.error("Error fetching login info:", error);
+          setUser("Error loading user");
+        }
+      };
+
+      fetchUserData();
+    }
+  }, [location.state]);
+
+  return (
+    <Fragment>
+      <header className="app-header">
+        <div className="main-header-container container-fluid">
+          <div className="header-content-left">
+            <div className="header-element">
+              <div className="horizontal-logo">
+                <Link
+                  to={`${import.meta.env.BASE_URL}dashboards/crm/`}
+                  className="header-logo"
+                >
+                  <img src={desktoplogo} alt="logo" className="desktop-logo" />
+                  <img src={togglelogo} alt="logo" className="toggle-logo" />
+                  <img src={desktopdark} alt="logo" className="desktop-dark" />
+                  <img src={toggledark} alt="logo" className="toggle-dark" />
+                  <img
+                    src={desktopwhite}
+                    alt="logo"
+                    className="desktop-white"
+                  />
+                  <img src={togglewhite} alt="logo" className="toggle-white" />
+                </Link>
+              </div>
+            </div>
+            <div className="header-element">
+              <Link
+                aria-label="Hide Sidebar"
+                onClick={() => toggleSidebar()}
+                className="sidemenu-toggle header-link animated-arrow hor-toggle horizontal-navtoggle"
+                data-bs-toggle="sidebar"
+                to="#"
+              >
+                <span></span>
+              </Link>
+            </div>
+          </div>
+
+          <div className="header-content-right">
+            {/* <div className="header-element header-search">
                             <Link to="#" className="header-link" data-bs-toggle="modal" data-bs-target="#searchModal" onClick={handleShow}>
                                 <i className="bx bx-search-alt-2 header-link-icon"></i>
                             </Link>
                         </div> */}
-                        {/* <Dropdown className="header-element country-selector">
+            {/* <Dropdown className="header-element country-selector">
                                 <Dropdown.Toggle variant='' className="header-link" >
                                     <img src={us} alt="img" className="rounded-circle header-link-icon" /></Dropdown.Toggle>
                             <Dropdown.Menu align="end" as="ul" className="main-header-dropdown">
@@ -518,17 +572,21 @@ const Header = ({ local_varaiable, ThemeChanger }) => {
                                 </Dropdown.Item>
                             </Dropdown.Menu>
                         </Dropdown> */}
-                        <div className="header-element header-theme-mode">
-                            <Link to="#" className="header-link layout-setting" onClick={() => ToggleDark()}>
-                                <span className="light-layout">
-                                    <i className="bx bx-moon header-link-icon"></i>
-                                </span>
-                                <span className="dark-layout">
-                                    <i className="bx bx-sun header-link-icon"></i>
-                                </span>
-                            </Link>
-                        </div>
-                        {/* <Dropdown className="header-element cart-dropdown" autoClose="outside">
+            <div className="header-element header-theme-mode">
+              <Link
+                to="#"
+                className="header-link layout-setting"
+                onClick={() => ToggleDark()}
+              >
+                <span className="light-layout">
+                  <i className="bx bx-moon header-link-icon"></i>
+                </span>
+                <span className="dark-layout">
+                  <i className="bx bx-sun header-link-icon"></i>
+                </span>
+              </Link>
+            </div>
+            {/* <Dropdown className="header-element cart-dropdown" autoClose="outside">
                             <Dropdown.Toggle variant='' className="header-link dropdown-toggle" data-bs-auto-close="outside" data-bs-toggle="dropdown">
                                 <i className="bx bx-cart header-link-icon"></i>
                                 <Badge bg="primary" className="badge bg-primary rounded-pill header-icon-badge" id="cart-icon-badge">
@@ -593,7 +651,7 @@ const Header = ({ local_varaiable, ThemeChanger }) => {
                                 </div>
                             </Dropdown.Menu>
                         </Dropdown> */}
-                        <Dropdown className="header-element notifications-dropdown" autoClose="outside">
+            {/* <Dropdown className="header-element notifications-dropdown" autoClose="outside">
                             <Dropdown.Toggle variant='' className="header-link dropdown-toggle" data-bs-toggle="dropdown" data-bs-auto-close="outside" id="messageDropdown" aria-expanded="false">
                                 <i className="bx bx-bell header-link-icon"></i>
                                 <Badge bg="secondary" className="badge bg-secondary rounded-pill header-icon-badge pulse pulse-secondary" id="notification-icon-badge">
@@ -657,8 +715,8 @@ const Header = ({ local_varaiable, ThemeChanger }) => {
                                     </div>
                                 </div>
                             </Dropdown.Menu>
-                        </Dropdown>
-                        {/* <Dropdown className="header-element header-shortcuts-dropdown">
+                        </Dropdown> */}
+            {/* <Dropdown className="header-element header-shortcuts-dropdown">
                             <Dropdown.Toggle variant='' className="header-link dropdown-toggle" data-bs-toggle="dropdown" data-bs-auto-close="outside" id="notificationDropdown" aria-expanded="false">
                                 <i className="bx bx-grid-alt header-link-icon"></i>
                             </Dropdown.Toggle>
@@ -770,123 +828,281 @@ const Header = ({ local_varaiable, ThemeChanger }) => {
                                 </div>
                             </Dropdown.Menu>
                         </Dropdown> */}
-                        <div className="header-element header-fullscreen">
-                            <Link onClick={toggleFullScreen} to="#" className="header-link">
-                                {fullScreen ? (
-                                    <i className="bx bx-exit-fullscreen header-link-icon"></i>
-                                ) : (
-                                    <i className="bx bx-fullscreen header-link-icon"></i>
-                                )}
-                            </Link>
-                        </div>
-                        <Dropdown className="header-element header-profile">
-                            <Dropdown.Toggle variant='' className="header-link" id="mainHeaderProfile" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false">
-                                <div className="d-flex align-items-center">
-                                    <div className="me-sm-2 me-0">
-                                        <img src={face9} alt="img" width="32" height="32" className="rounded-circle" />
-                                    </div>
-                                    <div className="d-sm-block d-none">
-                                        <p className="fw-semibold mb-0 lh-1 fs-13">{user.userName}</p>
-                                        <span className="op-7 fw-normal d-block fs-11">{user.userType}</span>
-                                    </div>
-                                </div>
-                            </Dropdown.Toggle>
-                            <Dropdown.Menu align="end" as="ul" className="main-header-dropdown dropdown-menu pt-0 overflow-hidden header-profile-dropdown dropdown-menu-end" aria-labelledby="mainHeaderProfile">
-                                <Dropdown.Item className="d-flex" href={`${import.meta.env.BASE_URL}pages/profile/`}><i className="ti ti-user-circle fs-18 me-2 op-7"></i>Profile</Dropdown.Item>
-                                <Dropdown.Item className="d-flex" href={`${import.meta.env.BASE_URL}pages/email/mailapp/`}><i className="ti ti-inbox fs-18 me-2 op-7"></i>Update Mobile </Dropdown.Item>
-                                <Dropdown.Item className="d-flex" as="div">
-                                <i className="ti ti-logout fs-18 me-2 op-7"></i>
-                                  <button onClick={handleLogOut} className=" border-0 bg-transparent text-decoration-none p-0">Log Out</button>
-                                </Dropdown.Item>
-
-                                </Dropdown.Menu>
-                        </Dropdown>
-                        <div className="header-element">
-                            <Link to="#" className="header-link switcher-icon" data-bs-toggle="offcanvas" data-bs-target="#switcher-canvas"
-                                onClick={() => Switchericon()}
-                            >
-                                <i className="bx bx-cog header-link-icon"></i>
-                            </Link>
-                        </div>
-                    </div>
+            <div className="header-element header-fullscreen">
+              <Link onClick={toggleFullScreen} to="#" className="header-link">
+                {fullScreen ? (
+                  <i className="bx bx-exit-fullscreen header-link-icon"></i>
+                ) : (
+                  <i className="bx bx-fullscreen header-link-icon"></i>
+                )}
+              </Link>
+            </div>
+            <Dropdown className="header-element header-profile">
+              <Dropdown.Toggle
+                variant=""
+                className="header-link"
+                id="mainHeaderProfile"
+                data-bs-toggle="dropdown"
+                data-bs-auto-close="outside"
+                aria-expanded="false"
+              >
+                <div className="d-flex align-items-center">
+                  <div className="me-sm-2 me-0">
+                    <img
+                      src={face9}
+                      alt="img"
+                      width="32"
+                      height="32"
+                      className="rounded-circle"
+                    />
+                  </div>
+                  <div className="d-sm-block d-none">
+                    <p className="fw-semibold mb-0 lh-1 fs-13">
+                      {user.userName}
+                    </p>
+                    <span className="op-7 fw-normal d-block fs-11">
+                      {user.userType}
+                    </span>
+                  </div>
                 </div>
+              </Dropdown.Toggle>
+              <Dropdown.Menu
+                align="end"
+                as="ul"
+                className="main-header-dropdown dropdown-menu pt-0 overflow-hidden header-profile-dropdown dropdown-menu-end"
+                aria-labelledby="mainHeaderProfile"
+              >
+                <Dropdown.Item
+                  className="d-flex"
+                  href={`${import.meta.env.BASE_URL}pages/profile/`}
+                >
+                  <i className="ti ti-user-circle fs-18 me-2 op-7"></i>Profile
+                </Dropdown.Item>
+                <Dropdown.Item
+                  className="d-flex"
+                  href={`${import.meta.env.BASE_URL}pages/email/mailapp/`}
+                >
+                  <i className="ti ti-inbox fs-18 me-2 op-7"></i>Update Mobile{" "}
+                </Dropdown.Item>
+                <Dropdown.Item className="d-flex" as="div">
+                  <i className="ti ti-logout fs-18 me-2 op-7"></i>
+                  <button
+                    onClick={handleLogOut}
+                    className=" border-0 bg-transparent text-decoration-none p-0"
+                  >
+                    Log Out
+                  </button>
+                </Dropdown.Item>
+              </Dropdown.Menu>
+            </Dropdown>
+            <div className="header-element">
+              <Link
+                to="#"
+                className="header-link switcher-icon"
+                data-bs-toggle="offcanvas"
+                data-bs-target="#switcher-canvas"
+                onClick={() => Switchericon()}
+              >
+                <i className="bx bx-cog header-link-icon"></i>
+              </Link>
+            </div>
+          </div>
+        </div>
+      </header>
+      <Modal
+        className="modal fade"
+        id="searchModal"
+        tabIndex={-1}
+        aria-labelledby="searchModal"
+        aria-hidden="true"
+        show={show}
+        onHide={handleClose}
+      >
+        <Modal.Body>
+          <div className="input-group">
+            <Link to="#" className="input-group-text" id="Search-Grid">
+              <i className="fe fe-search header-link-icon fs-18"></i>
+            </Link>
+            <Form.Control
+              type="search"
+              className="form-control border-0 px-2"
+              placeholder="Search"
+              aria-label="Username"
+              defaultValue={InputValue}
+              autoComplete="off"
+              onChange={(ele) => {
+                myfunction(ele.target.value);
+                setInputValue(ele.target.value);
+              }}
+            />
 
-            </header>
-            <Modal className="modal fade" id="searchModal" tabIndex={-1} aria-labelledby="searchModal" aria-hidden="true" show={show} onHide={handleClose}>
-                <Modal.Body>
-                    <div className="input-group">
-                        <Link to="#" className="input-group-text" id="Search-Grid"><i className="fe fe-search header-link-icon fs-18"></i></Link>
-                        <Form.Control type="search" className="form-control border-0 px-2" placeholder="Search" aria-label="Username" defaultValue={InputValue}
-                            autoComplete="off" onChange={(ele => { myfunction(ele.target.value); setInputValue(ele.target.value); })} />
-
-                        <Link to="#" className="input-group-text" id="voice-search"><i className="fe fe-mic header-link-icon"></i></Link>
-                        <Dropdown>
-                            <Dropdown.Toggle variant='' href="#" className="btn btn-light btn-icon no-caret" data-bs-toggle="dropdown" aria-expanded="false">
-                                <i className="fe fe-more-vertical"></i>
-                            </Dropdown.Toggle>
-                            <Dropdown.Menu className="dropdown-menu" as="ul">
-                                <Dropdown.Item as="li" className="dropdown-item" href="#">Action</Dropdown.Item>
-                                <Dropdown.Item as="li" className="dropdown-item" href="#">Another action</Dropdown.Item>
-                                <Dropdown.Item as="li" className="dropdown-item" href="#">Something else here</Dropdown.Item>
-                                <Dropdown.Divider as="li"><hr className="dropdown-divider" /></Dropdown.Divider>
-                                <Dropdown.Item as="li" className="dropdown-item" href="#">Separated link</Dropdown.Item>
-                            </Dropdown.Menu>
-                        </Dropdown>
-
-                    </div>
-                    {show1 ?
-                        <div className="card search-result position-relative z-index-9 search-fix  border mt-1">
-                            <div className="card-header">
-                                <div className="card-title me-2 text-break">Search result of {InputValue}</div>
-                            </div>
-                            <ListGroup className='my-2 ms-3'>
-                                {show2 ?
-                                    NavData.map((e) =>
-                                        <ListGroup.Item key={Math.random()} className="">
-                                            <Link to={`${e.path}/`} className='search-result-item' onClick={() => { setShow1(false), setInputValue(""); }}>{e.title}</Link>
-                                        </ListGroup.Item>
-                                    )
-                                    : <b className={`${searchcolor} `}>{searchval}</b>}
-                            </ListGroup>
-
-                        </div>
-                        : ""}
-                    <div className="mt-4">
-                        <p className="font-weight-semibold text-muted mb-2">Are You Looking For...</p>
-                        <span className="search-tags"><i className="fe fe-user me-2"></i>People<Link to="#" className="tag-addon"><i className="fe fe-x"></i></Link></span>
-                        <span className="search-tags"><i className="fe fe-file-text me-2"></i>Pages<Link to="#" className="tag-addon"><i className="fe fe-x"></i></Link></span>
-                        <span className="search-tags"><i className="fe fe-align-left me-2"></i>Articles<Link to="#" className="tag-addon"><i className="fe fe-x"></i></Link></span>
-                        <span className="search-tags"><i className="fe fe-server me-2"></i>Tags<Link to="#" className="tag-addon"><i className="fe fe-x"></i></Link></span>
-                    </div>
-                    <div className="my-4">
-                        <p className="font-weight-semibold text-muted mb-2">Recent Search :</p>
-                        <Alert variant='' className="p-2 border br-5 d-flex align-items-center text-muted mb-2 alert"  show={showa1}>
-                            <Link to={`${import.meta.env.BASE_URL}pages/notifications/`}><span>Notifications</span></Link>
-                            <Link className="ms-auto lh-1" to="#" data-bs-dismiss="alert" aria-label="Close"  onClick={toggleShowa1}>
-                                <i className="fe fe-x text-muted"></i></Link>
-                        </Alert>
-                        <Alert variant='' className="p-2 border br-5 d-flex align-items-center text-muted mb-2 alert" show={showa2}>
-                            <Link to={`${import.meta.env.BASE_URL}uielements/alerts/`}><span>Alerts</span></Link>
-                            <Link className="ms-auto lh-1" to="#" data-bs-dismiss="alert" aria-label="Close"  onClick={toggleShowa2}><i className="fe fe-x text-muted"></i></Link>
-                        </Alert>
-                        <Alert variant='' className="p-2 border br-5 d-flex align-items-center text-muted mb-0 alert" show={showa3} >
-                            <Link to={`${import.meta.env.BASE_URL}pages/email/mailapp/`}><span>Mail</span></Link>
-                            <Link className="ms-auto lh-1" to="#" data-bs-dismiss="alert" aria-label="Close"  onClick={toggleShowa3}><i className="fe fe-x text-muted"></i></Link>
-                        </Alert>
-                    </div>
-                </Modal.Body>
-                <Modal.Footer >
-                    <ButtonGroup className="btn-group ms-auto">
-                        <Button variant='primary-light' className="btn btn-sm">Search</Button>
-                        <Button variant='primary' className="btn btn-sm -">Clear Recents</Button>
-                    </ButtonGroup>
-                </Modal.Footer>
-            </Modal>
-        </Fragment>
-    );
+            <Link to="#" className="input-group-text" id="voice-search">
+              <i className="fe fe-mic header-link-icon"></i>
+            </Link>
+            <Dropdown>
+              <Dropdown.Toggle
+                variant=""
+                href="#"
+                className="btn btn-light btn-icon no-caret"
+                data-bs-toggle="dropdown"
+                aria-expanded="false"
+              >
+                <i className="fe fe-more-vertical"></i>
+              </Dropdown.Toggle>
+              <Dropdown.Menu className="dropdown-menu" as="ul">
+                <Dropdown.Item as="li" className="dropdown-item" href="#">
+                  Action
+                </Dropdown.Item>
+                <Dropdown.Item as="li" className="dropdown-item" href="#">
+                  Another action
+                </Dropdown.Item>
+                <Dropdown.Item as="li" className="dropdown-item" href="#">
+                  Something else here
+                </Dropdown.Item>
+                <Dropdown.Divider as="li">
+                  <hr className="dropdown-divider" />
+                </Dropdown.Divider>
+                <Dropdown.Item as="li" className="dropdown-item" href="#">
+                  Separated link
+                </Dropdown.Item>
+              </Dropdown.Menu>
+            </Dropdown>
+          </div>
+          {show1 ? (
+            <div className="card search-result position-relative z-index-9 search-fix  border mt-1">
+              <div className="card-header">
+                <div className="card-title me-2 text-break">
+                  Search result of {InputValue}
+                </div>
+              </div>
+              <ListGroup className="my-2 ms-3">
+                {show2 ? (
+                  NavData.map((e) => (
+                    <ListGroup.Item key={Math.random()} className="">
+                      <Link
+                        to={`${e.path}/`}
+                        className="search-result-item"
+                        onClick={() => {
+                          setShow1(false), setInputValue("");
+                        }}
+                      >
+                        {e.title}
+                      </Link>
+                    </ListGroup.Item>
+                  ))
+                ) : (
+                  <b className={`${searchcolor} `}>{searchval}</b>
+                )}
+              </ListGroup>
+            </div>
+          ) : (
+            ""
+          )}
+          <div className="mt-4">
+            <p className="font-weight-semibold text-muted mb-2">
+              Are You Looking For...
+            </p>
+            <span className="search-tags">
+              <i className="fe fe-user me-2"></i>People
+              <Link to="#" className="tag-addon">
+                <i className="fe fe-x"></i>
+              </Link>
+            </span>
+            <span className="search-tags">
+              <i className="fe fe-file-text me-2"></i>Pages
+              <Link to="#" className="tag-addon">
+                <i className="fe fe-x"></i>
+              </Link>
+            </span>
+            <span className="search-tags">
+              <i className="fe fe-align-left me-2"></i>Articles
+              <Link to="#" className="tag-addon">
+                <i className="fe fe-x"></i>
+              </Link>
+            </span>
+            <span className="search-tags">
+              <i className="fe fe-server me-2"></i>Tags
+              <Link to="#" className="tag-addon">
+                <i className="fe fe-x"></i>
+              </Link>
+            </span>
+          </div>
+          <div className="my-4">
+            <p className="font-weight-semibold text-muted mb-2">
+              Recent Search :
+            </p>
+            <Alert
+              variant=""
+              className="p-2 border br-5 d-flex align-items-center text-muted mb-2 alert"
+              show={showa1}
+            >
+              <Link to={`${import.meta.env.BASE_URL}pages/notifications/`}>
+                <span>Notifications</span>
+              </Link>
+              <Link
+                className="ms-auto lh-1"
+                to="#"
+                data-bs-dismiss="alert"
+                aria-label="Close"
+                onClick={toggleShowa1}
+              >
+                <i className="fe fe-x text-muted"></i>
+              </Link>
+            </Alert>
+            <Alert
+              variant=""
+              className="p-2 border br-5 d-flex align-items-center text-muted mb-2 alert"
+              show={showa2}
+            >
+              <Link to={`${import.meta.env.BASE_URL}uielements/alerts/`}>
+                <span>Alerts</span>
+              </Link>
+              <Link
+                className="ms-auto lh-1"
+                to="#"
+                data-bs-dismiss="alert"
+                aria-label="Close"
+                onClick={toggleShowa2}
+              >
+                <i className="fe fe-x text-muted"></i>
+              </Link>
+            </Alert>
+            <Alert
+              variant=""
+              className="p-2 border br-5 d-flex align-items-center text-muted mb-0 alert"
+              show={showa3}
+            >
+              <Link to={`${import.meta.env.BASE_URL}pages/email/mailapp/`}>
+                <span>Mail</span>
+              </Link>
+              <Link
+                className="ms-auto lh-1"
+                to="#"
+                data-bs-dismiss="alert"
+                aria-label="Close"
+                onClick={toggleShowa3}
+              >
+                <i className="fe fe-x text-muted"></i>
+              </Link>
+            </Alert>
+          </div>
+        </Modal.Body>
+        <Modal.Footer>
+          <ButtonGroup className="btn-group ms-auto">
+            <Button variant="primary-light" className="btn btn-sm">
+              Search
+            </Button>
+            <Button variant="primary" className="btn btn-sm -">
+              Clear Recents
+            </Button>
+          </ButtonGroup>
+        </Modal.Footer>
+      </Modal>
+    </Fragment>
+  );
 };
 
 const mapStateToProps = (state) => ({
-    local_varaiable: state
+  local_varaiable: state,
 });
 export default connect(mapStateToProps, { ThemeChanger })(Header);

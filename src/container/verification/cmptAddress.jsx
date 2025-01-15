@@ -28,10 +28,10 @@ function ComponentAddress() {
   });
   const [addresses, setAddresses] = useState([]);
   const inputRef = useRef(null); // Ref for Search Location input
-  const [transactionType, setTransactionType]= useState("I");
+  const [transactionType, setTransactionType] = useState("I");
   const [addressCode, setAddressCode] = useState(0);
 
-  const verificationCode = localStorage.getItem('vrfCode') ; // Example verification code (can be dynamic)
+  const verificationCode = localStorage.getItem("vrfCode"); // Example verification code (can be dynamic)
 
   useEffect(() => {
     // Load address types from API
@@ -180,11 +180,11 @@ function ComponentAddress() {
           msg: "Address Added Successfully",
           iconType: "success",
         });
-        const count= localStorage.getItem('vrfCount');
-        if(count){
-          localStorage.setItem('vrfCount',parseInt(count)+1);
-        }else{
-          localStorage.setItem('vrfCount',1);
+        const count = localStorage.getItem("vrfCount");
+        if (count) {
+          localStorage.setItem("vrfCount", parseInt(count) + 1);
+        } else {
+          localStorage.setItem("vrfCount", 1);
         }
       } else {
         alert("Error adding address");
@@ -202,8 +202,6 @@ function ComponentAddress() {
     });
   };
 
- 
-
   const resetForm = () => {
     setAddressDetails({
       i_main_address: "",
@@ -218,15 +216,15 @@ function ComponentAddress() {
     setSelectedAddressType(null);
   };
 
-  const handleRemove=(addressCode)=>{
+  const handleRemove = (addressCode) => {
     debugger;
     setTransactionType("D");
     setAddressCode(addressCode);
-    if(transactionType==="D" && addressCode!=="0"){
+    if (transactionType === "D" && addressCode !== "0") {
       handleSubmit();
       loadAddresses();
     }
-  }
+  };
 
   return (
     <>
@@ -235,7 +233,7 @@ function ComponentAddress() {
           <Accordion.Header>Address Verification</Accordion.Header>
           <Accordion.Body>
             <Row>
-              <Col md={6} sm={6}>
+              <Col xl={3} lg={4} md={6} sm={6}>
                 <Form.Group>
                   <Form.Label>Address Type</Form.Label>
                   <Select
@@ -247,7 +245,7 @@ function ComponentAddress() {
                 </Form.Group>
               </Col>
 
-              <Col md={6} sm={6}>
+              <Col xl={3} lg={4} md={6} sm={6}>
                 <Form.Group>
                   <Form.Label>Search Location</Form.Label>
                   <Form.Control
@@ -258,7 +256,7 @@ function ComponentAddress() {
                 </Form.Group>
               </Col>
 
-              <Col md={6} sm={6}>
+              <Col xl={3} lg={4} md={6} sm={6}>
                 <Form.Group>
                   <Form.Label>Main Address</Form.Label>
                   <Form.Control
@@ -275,7 +273,7 @@ function ComponentAddress() {
                 </Form.Group>
               </Col>
 
-              <Col md={6} sm={6}>
+              <Col xl={3} lg={4} md={6} sm={6}>
                 <Form.Group>
                   <Form.Label>Full Address</Form.Label>
                   <Form.Control
@@ -287,7 +285,7 @@ function ComponentAddress() {
                 </Form.Group>
               </Col>
 
-              <Col md={6} sm={6}>
+              <Col xl={3} lg={4} md={6} sm={6}>
                 <Form.Group>
                   <Form.Label>City</Form.Label>
                   <Form.Control
@@ -299,7 +297,7 @@ function ComponentAddress() {
                 </Form.Group>
               </Col>
 
-              <Col md={6} sm={6}>
+              <Col xl={3} lg={4} md={6} sm={6}>
                 <Form.Group>
                   <Form.Label>State</Form.Label>
                   <Form.Control
@@ -311,63 +309,72 @@ function ComponentAddress() {
                 </Form.Group>
               </Col>
 
-              <Col md={6} sm={6}>
+              <Col xl={3} lg={4} md={6} sm={6}>
                 <Form.Group>
                   <Form.Label>Pin Code</Form.Label>
                   <Form.Control
                     type="text"
+                    maxLength={7}
                     value={addressDetails.i_pin_code}
-                    disabled
+                    onChange={(e) => {
+                      const value = e.target.value.replace(/[^0-9]/g, ""); // Allow only numeric values
+                      setAddressDetails((prevState) => ({
+                        ...prevState,
+                        i_pin_code: value,
+                      }));
+                    }}
+                    
                     placeholder="Enter pin code"
                   />
                 </Form.Group>
               </Col>
             </Row>
+            <br />
             <Button onClick={handleSubmit}>Submit Address</Button>
             <hr />
-            <div  className=" table-responsive">
-            <Table striped bordered hover>
-  <thead>
-    <tr>
-      <th>Address Type</th>
-      <th>Location</th>
-      <th>Address</th>
-      <th>State</th>
-      <th>City</th>
-      <th>Pincode</th>
-      <th>Action</th>
-    </tr>
-  </thead>
-  <tbody>
-  {addresses.map((address, idx) => (
-    <tr key={idx}>
-      {/* Check if type_name is an object, if so stringify it, else display as string */}
-      <td>
-        {address.type_name && typeof address.type_name === "object"
-          ? "Unknown"
-          : address.type_name || "Unknown"}
-      </td>
-      <td>{address.location_name}</td>
-      <td>{address.address}</td>
-      <td>{address.state_name}</td>
-      <td>{address.city_name}</td>
-      <td>{address.pincode}</td>
-      <td>
-        <Button className=""
-          variant="danger"
-          onClick={() => {
-            handleRemove(address.address_code);  // Pass addressCode as argument
-          }}
-        >
-          Remove
-        </Button>
-      </td>
-    </tr>
-  ))}
-</tbody>
-
-</Table>
-
+            <div className=" table-responsive">
+              <Table striped bordered hover>
+                <thead>
+                  <tr>
+                    <th>Address Type</th>
+                    <th>Location</th>
+                    <th>Address</th>
+                    <th>State</th>
+                    <th>City</th>
+                    <th>Pincode</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {addresses.map((address, idx) => (
+                    <tr key={idx}>
+                      {/* Check if type_name is an object, if so stringify it, else display as string */}
+                      <td>
+                        {address.type_name &&
+                        typeof address.type_name === "object"
+                          ? "Unknown"
+                          : address.type_name || "Unknown"}
+                      </td>
+                      <td>{address.location_name}</td>
+                      <td>{address.address}</td>
+                      <td>{address.state_name}</td>
+                      <td>{address.city_name}</td>
+                      <td>{address.pincode}</td>
+                      <td>
+                        <Button
+                          className=""
+                          variant="danger"
+                          onClick={() => {
+                            handleRemove(address.address_code); // Pass addressCode as argument
+                          }}
+                        >
+                          Remove
+                        </Button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </Table>
             </div>
           </Accordion.Body>
         </Accordion.Item>

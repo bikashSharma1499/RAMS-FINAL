@@ -42,7 +42,7 @@ const PropertyDetails = ({ goToStep }) => {
       }
 
       const script = document.createElement("script");
-      script.src = `https://maps.googleapis.com/maps/api/js?key=YOUR_GOOGLE_MAPS_API_KEY&libraries=places`;
+      script.src = `https://maps.googleapis.com/maps/api/js?key=AIzaSyDaqeMVzzWsG2gdnoO8PhMN7VXVCAMG0Ts&libraries=places`;
       script.async = true;
       script.onload = initAutocomplete;
       document.head.appendChild(script);

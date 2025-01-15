@@ -96,7 +96,7 @@ function PaymentHistory() {
     <>
       <Pageheader title="Payment History" heading="Payments" active="Payment History" />
       
-      <div className="container mt-4">
+      <div className=" mt-4">
         <div className="card shadow-sm border-0">
           <div className="card-body">
             <DataTable

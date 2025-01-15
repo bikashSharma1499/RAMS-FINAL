@@ -8,7 +8,7 @@ import Amenities from "./agrS4Amenities";
 import { Card } from "react-bootstrap";
 
 const MultistepForm = () => {
-  const [currentStep, setCurrentStep] = useState(6);
+  const [currentStep, setCurrentStep] = useState(1);
   const totalSteps = 6;
 
   // Load the current step and other state from sessionStorage on component mount

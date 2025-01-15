@@ -163,16 +163,7 @@ export const MENUITEMS = [
           },
         ],
       },
-      {
-        path: `${import.meta.env.BASE_URL}auth/signin`,
-        icon: (<i className="bx bx-log-out side-menu__icon"></i>),
-        type: "link",
-        selected: false,
-        active: false,
-        title: "Log Out",
-        
-      },
-
+      
     ],
   },
 ];

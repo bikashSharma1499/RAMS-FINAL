@@ -6,69 +6,73 @@ import { GetLoginInfo } from "../auth/logindata";
 import { useNavigate } from "react-router-dom";
 
 const AgreementPendingList = () => {
-  const [dataList, setDataList] = useState([]);
-  const [filteredDataList, setFilteredDataList] = useState([]);
-  const [loadingList, setLoadingList] = useState(false);
-  const [searchList, setSearchList] = useState("");
-  const [error, setError] = useState(null); // State for error messages
-  const navigate = useNavigate(); // For navigation when Continue button is clicked
+  const [dataList, setDataList] = useState([]); // Complete data list
+  const [filteredDataList, setFilteredDataList] = useState([]); // Filtered data list
+  const [loading, setLoading] = useState(false); // Loading state
+  const [searchTerm, setSearchTerm] = useState(""); // Search input
+  const [error, setError] = useState(null); // Error state
+  const navigate = useNavigate();
 
   // Fetch data from the API
   const fetchData = async () => {
-    setLoadingList(true);
-    setError(null); // Reset error on each fetch attempt
+    setLoading(true);
+    setError(null);
+
     try {
       const user = GetLoginInfo();
       if (!user || !user.userKey) {
-        throw new Error("User information is not available");
+        throw new Error("User information is missing. Please log in again.");
       }
 
       const response = await axios.post(API_ENDPOINTS.agreementListDisplay, {
         customerCode: user.userKey,
       });
 
-      const fetchedData = response.data || [];
-      const filteredData = fetchedData.filter((item) => item.agreement_status === "Pending");
+      const data = Array.isArray(response.data) ? response.data : [];
+      const pendingData = data.filter((item) => item.agreement_status === "Pending");
 
-      setDataList(fetchedData);
-      setFilteredDataList(filteredData);
-    } catch (error) {
-      setError("Error fetching data. Please try again later.");
-      console.error("Error fetching data:", error.message);
+      setDataList(data);
+      setFilteredDataList(pendingData);
+    } catch (err) {
+      setError(err.response?.data?.message || "Failed to fetch data. Please try again.");
+      console.error("Error fetching data:", err.message);
     } finally {
-      setLoadingList(false);
+      setLoading(false);
     }
   };
+
+  // Filter data when the search term changes
+  useEffect(() => {
+    const debounce = setTimeout(() => {
+      const lowercasedSearch = searchTerm.toLowerCase();
+      const filtered = dataList.filter(
+        (item) =>
+          item.agreement_status === "Pending" &&
+          Object.values(item).some((value) =>
+            String(value).toLowerCase().includes(lowercasedSearch)
+          )
+      );
+      setFilteredDataList(filtered);
+    }, 300);
+
+    return () => clearTimeout(debounce);
+  }, [searchTerm, dataList]);
 
   // Fetch data on component mount
   useEffect(() => {
     fetchData();
   }, []);
 
-  // Debounce the search input to prevent unnecessary re-renders
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      const lowercasedSearch = searchList.toLowerCase();
-      const filtered = dataList
-        .filter((item) => item.agreement_status === "Pending")
-        .filter((item) =>
-          Object.values(item).some((value) =>
-            String(value).toLowerCase().includes(lowercasedSearch)
-          )
-        );
-      setFilteredDataList(filtered);
-    }, 300); // 300ms debounce delay
-
-    return () => clearTimeout(timer); // Cleanup timeout on re-render
-  }, [searchList, dataList]);
-
-  // Handle Continue button click
+  // Handle navigation to agreement details
   const handleContinue = (agreementId) => {
-    console.log("Continue clicked for agreement ID:", agreementId);
+    if (!agreementId) {
+      console.error("Invalid agreement ID:", agreementId);
+      return;
+    }
     navigate(`/agreement/details/${agreementId}`);
   };
 
-  // Table columns
+  // Define table columns
   const columns = [
     {
       name: "Agreement ID",
@@ -110,31 +114,33 @@ const AgreementPendingList = () => {
 
   return (
     <div>
-      {error && <div className="alert alert-danger">{error}</div>} {/* Display error message */}
-      
+      {/* Error message */}
+      {error && <div className="alert alert-danger">{error}</div>}
+
+      {/* Search box */}
       <div className="d-flex justify-content-between">
         <div className="search-box" style={{ marginBottom: "20px" }}>
           <input
             type="text"
             className="form-control"
             placeholder="Search..."
-            value={searchList}
-            onChange={(e) => setSearchList(e.target.value)}
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
             style={{ maxWidth: "300px", margin: "0 auto" }}
           />
         </div>
       </div>
 
+      {/* DataTable */}
       <DataTable
         columns={columns}
         data={filteredDataList}
-        progressPending={loadingList}
+        progressPending={loading}
         pagination
-        allowOverflow={true} 
-        responsive
         fixedHeader
         highlightOnHover
         striped
+        className="table-responsive"
       />
     </div>
   );

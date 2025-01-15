@@ -11,8 +11,8 @@ import Loader from "./components/common/loader/loader.jsx";
 /*Login Loop*/
 import LoginCheck from "./container/auth/logincheck.jsx";
 import Signin from "./container/auth/signin.jsx";
-import Twostep from "./container/auth/twostep.jsx";
 import Signup from "./container/auth/signup.jsx";
+import handleLogOut from "./container/auth/logout.jsx";
 /*Rent Agreement*/
 
 import NewAgreement from "./container/agreement/newAgreement.jsx";
@@ -33,6 +33,11 @@ import VerificationForm from "./container/verification/newrequest.jsx";
 import VerificationDashboard from "./container/verification/dashboard.jsx";
 import VerificationListReport from "./container/verification/listReport.jsx";
 import PaymentHistory from "./container/verification/paymentHistory.jsx";
+
+
+/*Insta Mojo Payment Gateway*/
+import InstamojoPayment from "./utils/payment.jsx";
+
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.Fragment>
     <BrowserRouter>
@@ -49,8 +54,8 @@ ReactDOM.createRoot(document.getElementById("root")).render(
               element={<Signup />}
             />
             <Route
-              path={`${import.meta.env.BASE_URL}auth/twostep/`}
-              element={<Twostep />}
+              path={`${import.meta.env.BASE_URL}auth/logout/`}
+              element={<handleLogOut />}
             />
             <Route
               path={`${import.meta.env.BASE_URL}auth/logincheck/`}
@@ -63,6 +68,10 @@ ReactDOM.createRoot(document.getElementById("root")).render(
               element={<Crm />}
             />
             <Route
+              path={`${import.meta.env.BASE_URL}payment`}
+              element={<InstamojoPayment />}
+            />
+            <Route
               path={`${import.meta.env.BASE_URL}customer/list/`}
               element={<Customerlist />}
             />
@@ -72,7 +81,7 @@ ReactDOM.createRoot(document.getElementById("root")).render(
             />
 
             <Route
-              path={`${import.meta.env.BASE_URL}agreement/list`}
+              path={`${import.meta.env.BASE_URL}agreement/list/`}
               element={<RentAgreementActive />}
             />
             <Route
@@ -112,11 +121,11 @@ ReactDOM.createRoot(document.getElementById("root")).render(
               element={<VerificationDashboard />}
             />
             <Route
-              path={`${import.meta.env.BASE_URL}verification/list`}
+              path={`${import.meta.env.BASE_URL}verification/list/`}
               element={<VerificationListReport />}
             />
             <Route
-              path={`${import.meta.env.BASE_URL}verification/payment-history`}
+              path={`${import.meta.env.BASE_URL}verification/payment-history/`}
               element={<PaymentHistory />}
             />
           </Route>

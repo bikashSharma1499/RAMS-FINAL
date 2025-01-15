@@ -94,7 +94,8 @@ const DataTableComponent = () => {
         pagination
         highlightOnHover
         responsive
-        expandableRows
+        fixedHeader={true}
+   
         subHeader
         subHeaderComponent={
           <div

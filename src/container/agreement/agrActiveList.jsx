@@ -1,17 +1,19 @@
 import React, { useState, useEffect } from "react";
 import DataTable from "react-data-table-component";
 import axios from "axios";
-import { Card, Row, Col, Button } from "react-bootstrap";
+import { Card, Button } from "react-bootstrap";
 import { API_ENDPOINTS } from "../../utils/apiConfig";
 import { GetLoginInfo } from "../auth/logindata";
 import LeaseDeed from "./printagreement";
 import Pageheader from "../../components/pageheader/pageheader";
+
 const RentAgreementActive = () => {
   const [dataList, setDataList] = useState([]);
   const [filteredDataList, setFilteredDataList] = useState([]);
   const [loadingList, setLoadingList] = useState(false);
   const [searchList, setSearchList] = useState("");
   const [showAgreementPrint, setShowAgreementPrint] = useState(false);
+
   // Fetch data from the API
   const fetchData = async () => {
     setLoadingList(true);
@@ -26,13 +28,7 @@ const RentAgreementActive = () => {
 
       const fetchedData = response.data || [];
 
-      const activeData = fetchedData.filter((item)=>{
-        if(item.agreement_status!='Pending'){
-          return item;
-        }
-      });
-
-
+      const activeData = fetchedData.filter((item) => item.agreement_status !== "Pending");
 
       setDataList(activeData);
       setFilteredDataList(activeData);
@@ -42,9 +38,13 @@ const RentAgreementActive = () => {
       setLoadingList(false);
     }
   };
-  const showAgreement = (code) => {
-    sessionStorage.setItem('agcCode',code);
-    setShowAgreementPrint(true);
+
+  const handleAgreementAction = (code, type) => {
+    if (type.toLowerCase() === "stamp agreement") {
+      sessionStorage.setItem("signStatus", "True");
+    }
+    sessionStorage.setItem("agcCode", code);
+    setShowAgreementPrint(false);
   };
 
   // Fetch data on component mount
@@ -68,6 +68,17 @@ const RentAgreementActive = () => {
   }, [searchList, dataList]);
 
   // Badge Color for Status
+  const getAgmtStatusBadge = (type) => {
+    switch (type.toLowerCase()) {
+      case "stamp agreement":
+        return <span className="badge bg-primary">Stamp Agreement</span>;
+      case "draft agreement":
+        return <span className="badge bg-warning text-dark">Draft Agreement</span>;
+      default:
+        return <span className="badge bg-secondary">{type || "Unknown"}</span>;
+    }
+  };
+
   const getStatusBadge = (status) => {
     switch (status.toLowerCase()) {
       case "active":
@@ -75,9 +86,7 @@ const RentAgreementActive = () => {
       case "close":
         return <span className="badge bg-danger">Close</span>;
       default:
-        return (
-          <span className="badge bg-secondary">{status || "Unknown"}</span>
-        );
+        return <span className="badge bg-secondary">{status || "Unknown"}</span>;
     }
   };
 
@@ -109,16 +118,32 @@ const RentAgreementActive = () => {
       sortable: true,
     },
     {
-      name: "Download",
+      name: "Type",
+      selector: (row) => getAgmtStatusBadge(row.agreement_type),
+      sortable: true,
+    },
+    {
+      name: "Action",
       cell: (row) =>
-        row.agreement_status?.toLowerCase() === "active" ||
-        row.agreement_status?.toLowerCase() === "close" ? (
-          <Button variant="danger" className="btn-sm" onClick={() => showAgreement(row.agreement_code)}>
-          Download
-        </Button>
-        ) : (
-          <span className="text-muted">N/A</span>
-        ),
+        row.agreement_status.toLowerCase() !== "close" ? (
+          <Button
+            variant={
+              row.agreement_type?.toLowerCase() === "stamp agreement"
+                ? "primary"
+                : row.agreement_type?.toLowerCase() === "draft agreement"
+                ? "warning"
+                : "secondary"
+            }
+            className="btn-sm text-white"
+            onClick={() => handleAgreementAction(row.agreement_code, row.agreement_type)}
+          >
+            {row.agreement_type?.toLowerCase() === "stamp agreement"
+              ? "Proceed to Sign"
+              : row.agreement_type?.toLowerCase() === "draft agreement"
+              ? "Download Now"
+              : "N/A"}
+          </Button>
+        ) : null,
       ignoreRowClick: true,
       allowOverflow: true,
       button: true,
@@ -126,19 +151,12 @@ const RentAgreementActive = () => {
   ];
 
   return (
-
-    <div >
-    
-
+    <div>
       {!showAgreementPrint ? (
         <>
-         <Pageheader
-              title="Agreement List"
-              heading="Agreement"
-              active="Agreement List"
-            />
+          <Pageheader title="Agreement List" heading="Agreement" active="Agreement List" />
           <div className="d-flex justify-content-between align-items-center mb-4">
-              <div className="search-box">
+            <div className="search-box">
               <input
                 type="text"
                 className="form-control"
@@ -156,39 +174,32 @@ const RentAgreementActive = () => {
             progressPending={loadingList}
             pagination
             responsive
-            allowOverflow={true}
-            fixedHeader
             highlightOnHover
             striped
             customStyles={{
               rows: {
                 style: {
-                  minHeight: "50px", // Override the row height
-                  overflowX: scroll
+                  minHeight: "50px",
                 },
               },
             }}
           />
         </>
       ) : (
-        <>
-          <Card>
-            <Card.Header className="d-flex justify-content-between">
-              <Card.Title className=" fw-bolder">Download Your Agreement </Card.Title>
-              <button
-                onClick={() => setShowAgreementPrint(false)}
-                className="btn btn-danger"
-              >
-                Go Back
-              </button>
-            </Card.Header>
-
-            <Card.Body className=" bg-body-secondary">
-       
-              <LeaseDeed />
-            </Card.Body>
-          </Card>
-        </>
+        <Card>
+          <Card.Header className="d-flex justify-content-between">
+            <Card.Title className="fw-bolder">Download Your Agreement</Card.Title>
+            <button
+              onClick={() => setShowAgreementPrint(false)}
+              className="btn btn-danger"
+            >
+              Go Back
+            </button>
+          </Card.Header>
+          <Card.Body className="bg-body-secondary">
+            <LeaseDeed />
+          </Card.Body>
+        </Card>
       )}
     </div>
   );

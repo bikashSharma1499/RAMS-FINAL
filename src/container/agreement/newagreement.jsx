@@ -25,7 +25,7 @@ function NewAgreement() {
   const [showOtp, setShowOtp] = useState(false);
   const [inputOtp, setInputOtp] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [showAgreementList, setShowAgreementList] = useState(true);
+  const [showAgreementList, setShowAgreementList] = useState(false);
   const [showResendOtp, setShowResendOtp] = useState(false);
   const [timeLeft, setTimeLeft] = useState(120); // Timer initialized to 120 seconds
   const [isActive, setIsActive] = useState(false); // To track if the timer should run
@@ -132,7 +132,7 @@ function NewAgreement() {
       showPopup(data);
       setTimeout(() => {
         setShowAgreement(true);
-        showOtp(false);
+        setShowOtp(false);
       }, 1200);
     } else {
       Object.keys(inputRefs).forEach((refKey) => {
@@ -228,9 +228,9 @@ function NewAgreement() {
                           </Form.Control.Feedback>
                         </Form.Group>
 
-                        <Button
+                        <button
                           onClick={handleProceed}
-                          className="btn btn-primary mt-3"
+                          className="btn btn-save mt-3"
                           type="button"
                           disabled={isLoading} // Disable the button while loading
                         >
@@ -246,15 +246,15 @@ function NewAgreement() {
                           ) : (
                             "Send OTP"
                           )}
-                        </Button>
-                        <Button
+                        </button>
+                        <button
                           onClick={() => setShowAgreementList(true)}
-                          className="btn btn-danger ms-2 mt-3"
+                          className="btn-cancel ms-2 mt-3"
                           type="button"
                           disabled={isLoading}
                         >
                           Cancel
-                        </Button>
+                        </button>
                       </Col>
                       <Col
                         md={6}
@@ -382,7 +382,7 @@ function NewAgreement() {
                                     <button
                                       
                                       onClick={handleProceed}
-                                      className="mt-3  btn-attractive"
+                                      className="mt-3  btn btn-attractive"
                                     >
                                       {" "}
                                       Resend
@@ -401,11 +401,12 @@ function NewAgreement() {
                 <>
                   <div className=" w-100  d-flex justify-content-between">
                     <h5>Continue or Create a new Agreement</h5>
-                    <Button onClick={() => setShowAgreementList(false)}>
+                    <button className=" btn-new" onClick={() => setShowAgreementList(false)}>
                       {" "}
                       <i className=" bi-plus-circle"></i> Create Agreement{" "}
-                    </Button>
+                    </button>
                   </div>
+                  
                   {/* <AgreementPendingList /> */}
                 </>
               )}

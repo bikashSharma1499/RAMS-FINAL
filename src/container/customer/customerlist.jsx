@@ -23,10 +23,10 @@ function Customerlist() {
             <>
               <Row>
                 <Col xs={12}>
-                  <Button onClick={handleNewReg} className=" btn btn-primary  float-end" > <i className=" bi bi-plus"></i> New Customer  </Button>
+                  <button onClick={handleNewReg} className=" btn btn-new  float-end" > <i className=" bi bi-plus"></i> New Customer  </button>
                 </Col>
 
-                <Col>
+                <Col className="mt-3">
                   <Customerdata />
                 </Col>
               </Row>

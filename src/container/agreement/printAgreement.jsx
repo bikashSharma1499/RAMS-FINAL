@@ -11,10 +11,12 @@ import "../../assets/css/agreement.css";
 const LeaseDeed = () => {
   const [agreementData, setAgreementData] = useState(null);
   const [leaseData, setLeaseData] = useState(null);
+  const [invitees, setInvitees] = useState([]);
   const location = useLocation();
   const queryParams = new URLSearchParams(location.search);
   const [agreementCode, setAgreementCode]= useState(null);
   const legalRef = useRef(null);
+  const [response, setLeegalityResponse] = useState(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -34,6 +36,15 @@ const LeaseDeed = () => {
       });
       console.log("API Response:", response.data);
       setAgreementData(response.data);
+      if (response.data) {
+        const inviteesList = response.data.map(mainData => ({
+          name: mainData.first_party_name,  
+          email: mainData.first_party__mail, 
+          phone: mainData.first_party_mobile 
+        }));
+
+        setInvitees(inviteesList);
+     }
     }
     catch (error) {
       console.error('Error fetching Agreement data:', error);
@@ -55,6 +66,15 @@ const LeaseDeed = () => {
       });
       console.log("API Response:", response.data);
       setLeaseData(response.data);
+      if (response.data) {
+        const addInviteesList = response.data.map(lease => ({
+          name: lease.name,  
+          email: lease.mail, 
+          phone: lease.mobile 
+        }));
+
+        setInvitees(prevInvitees => [...prevInvitees, ...addInviteesList]);
+     }
     } catch (error) {
       console.error('Error fetching lease deed data:', error);
     }
@@ -80,8 +100,8 @@ const LeaseDeed = () => {
 
     const capturePage = (pageElement) => {
       return new Promise((resolve) => {
-        html2canvas(pageElement, { scale: 3 }).then((canvas) => {
-          const imgData = canvas.toDataURL('image/jpeg', 1.0);
+        html2canvas(pageElement, { scale: 5 }).then((canvas) => {
+          const imgData = canvas.toDataURL('image/jpeg', 0.25);
           const pageHeight = 297;
           const imgWidth = 210;
           const imgHeight = (canvas.height * imgWidth) / canvas.width;
@@ -98,7 +118,7 @@ const LeaseDeed = () => {
           for (let i = 2; i < pagesRequired; i++) {
             doc.addPage();
             const offset = -i * pageHeight;
-            doc.addImage(imgData, 'JPEG', 0, offset, imgWidth, imgHeight, 'FAST');
+            doc.addImage(imgData, 'JPEG', 0, offset, imgWidth, imgHeight);
           }
 
           pageIndex++;
@@ -112,8 +132,83 @@ const LeaseDeed = () => {
     }
 
     doc.save('lease_deed.pdf');
+  };
 
-    const base64PDF = doc.output('datauristring');
+  const signPDF = async () => {
+    const inputElement = legalRef.current;
+  
+    const doc = new jsPDF({
+      orientation: 'portrait',
+      unit: 'mm',
+      format: 'a4',
+    });
+  
+    const pages = Array.from(inputElement.querySelectorAll('.p1, .pg'));
+  
+    let pageIndex = 0;
+  
+    const capturePage = (pageElement) => {
+      return new Promise((resolve) => {
+        html2canvas(pageElement, { scale: 5 }).then((canvas) => {
+          const imgData = canvas.toDataURL('image/jpeg', 0.25);
+          const pageHeight = 297;
+          const imgWidth = 210;
+          const imgHeight = (canvas.height * imgWidth) / canvas.width;
+  
+          const pagesRequired = Math.ceil(imgHeight / pageHeight);
+  
+          if (pageIndex === 0) {
+            doc.addImage(imgData, 'JPEG', 0, 0, imgWidth, imgHeight);
+          } else {
+            doc.addPage();
+            doc.addImage(imgData, 'JPEG', 0, 0, imgWidth, imgHeight);
+          }
+  
+          for (let i = 2; i < pagesRequired; i++) {
+            doc.addPage();
+            const offset = -i * pageHeight;
+            doc.addImage(imgData, 'JPEG', 0, offset, imgWidth, imgHeight);
+          }
+  
+          pageIndex++;
+          resolve();
+        });
+      });
+    };
+  
+    for (const page of pages) {
+      await capturePage(page);
+    }
+  
+    const base64PDF = doc.output('datauristring').split(',')[1];
+    const code = sessionStorage.getItem('agcCode');
+    const data = {
+      profileId: "eU7YdoE",
+      file: {
+        name: "Leese-Deed",
+        file:  base64PDF 
+      },
+      invitees: invitees,
+      irn : "A-" + code    
+    };
+
+    const rawData = JSON.stringify(data);
+  console.log(rawData);
+    try {
+      const response = await axios.post('https://api.redcheckes.com/proxy/sign-request', rawData, {
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      });
+  
+      setLeegalityResponse(response.data); 
+      console.log(response.data);
+      alert('Please Check Your Email to get the Agreement Signed!');    
+        window.location.href = '/agreement/list';
+    } catch (error) {
+      console.error('Error during the signing process:', error);
+      alert('There was an issue Uploading the Document. Please try again.'); 
+    }
   };
 
 
@@ -223,7 +318,8 @@ const LeaseDeed = () => {
         </div>
       </div>
       <div className='text-center mt-2'>
-      <button  className="btn btn-success btn-sm" onClick={generatePDF}>Download Lease Deed as PDF</button>
+      <button  className="btn btn-primary btn-sm" onClick={generatePDF}>Download Agreement</button>
+      <button  className="btn btn-success btn-sm" onClick={signPDF}>Sign Agreement</button>
       </div>
     </div>
   );

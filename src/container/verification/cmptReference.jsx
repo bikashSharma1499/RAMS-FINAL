@@ -115,6 +115,7 @@ const ComponentReference = ({ onUpdate }) => {
       if (response.status === 200 && response.data) {
         const { result } = response.data;
         const resultArray = result ? result.split(",") : [];
+        debugger;
         if (resultArray.length > 4) {
           showPopup({
             title: resultArray[1],

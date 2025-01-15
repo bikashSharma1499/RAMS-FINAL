@@ -36,7 +36,6 @@ const VerificationForm = () => {
   const [showList, setShowList] = useState(true);
   const [data, setData] = useState([]);
   const [submitLoading, setSubmitLoading] = useState(false);
-  const [deleteStatus,setDeleteStatus] = useState(false);
   const navigate = useNavigate();
   useEffect(() => {
     setSrvLoading(true);
@@ -52,62 +51,22 @@ const VerificationForm = () => {
     setSrvLoading(false);
   }, []);
 
+
   const handleServiceSelection = (service) => {
     setSelectedService(service);
     setSelectedServiceCode(service.service_code);
-  
-    // First API call
     axios
       .post(API_ENDPOINTS.serviceComponentList, {
         transactionType: "1",
         serviceCode: service.service_code,
         componentCcode: "0",
       })
-      .then((response) => {
-        setComponents(response.data);
-  
-        const user = GetLoginInfo();
-        const payload = {
-          customerCode: user.userKey,
-          serviceCode: service.service_code,
-        };
-  
-        // Second API call
-        return axios.post(API_ENDPOINTS.serviceNewRequest, payload);
-      })
-      .then((response) => {
-        if (response.data && response.status === 200 && response.data.result) {
-          const resultArray = response.data.result.split(",");
-  
-          const verificationCode = resultArray[1];
-          if (resultArray[0] === "Old") {
-            setCandidateDetails((prevDetails) => ({
-              ...prevDetails,
-              cndName: resultArray[2],
-              cndMobile: resultArray[3],
-              cndMail: resultArray[4],
-            }));
-            if(resultArray[2] !='' && resultArray[3]!=''){
-              setDeleteStatus(true);
-            }
-          }
-  
-          console.log("Service request successful:", verificationCode);
-          console.log(resultArray);
-          localStorage.setItem("vrfCode", verificationCode);
-        } else {
-          console.error("Invalid response structure:", response.data);
-        }
-      })
-      .catch((error) => {
-        console.error("Error:", error);
-      });
+      .then((response) => setComponents(response.data))
+      .catch((error) => console.error("Error fetching components:", error));
   };
-  
-  
   const handleComponentSelect = (comp) => {
     //debugger;
-    // alert(comp);
+   // alert(comp);
     setSelectedComponents((prevComponents) => {
       const isComponentSelected = prevComponents.includes(comp);
 
@@ -198,74 +157,88 @@ const VerificationForm = () => {
   };
 
   const handleBasicDetailsSubmit = async () => {
-    debugger;
     if (validate()) {
       setSubmitLoading(true);
       try {
         const user = GetLoginInfo();
-  
+
         if (!user || !user.userKey) {
           alert("User not logged in. Please log in and try again.");
           return;
         }
-        
-        const verificationCode=localStorage.getItem("vrfCode");
 
-        if (candidateDetails && candidateDetails.cndName) {
-          const candidatePayload = {
-            verificationCode: verificationCode,
-            candidateName: candidateDetails.cndName,
-            mobileNumber: candidateDetails.cndMobile,
-            emailID: candidateDetails.cndMail,
-          };
-  
-          console.log("Candidate Payload:", candidatePayload);
-  
-          try {
+        const payload = {
+          customerCode: user.userKey,
+          serviceCode: selectedServiceCode,
+        };
+
+        // First API Call
+        const response = await axios.post(
+          API_ENDPOINTS.serviceNewRequest,
+          payload
+        );
+
+        if (response.data && response.status === 200 && response.data.result) {
+          const verificationCode = response.data.result;
+          console.log("Service request successful:", verificationCode);
+          localStorage.setItem("vrfCode", verificationCode);
+
+          // Validate candidateDetails before making the second API call
+          if (candidateDetails.cndName) {
+            const candidatePayload = {
+              verificationCode: verificationCode,
+              candidateName: candidateDetails.cndName,
+              mobileNumber: candidateDetails.cndMobile,
+              emailID: candidateDetails.cndMail,
+            };
+            //  debugger;
+            // Second API Call
             const responseCandidate = await axios.post(
               API_ENDPOINTS.seriveCandidateDetailsAdd,
               candidatePayload
             );
-  
+
             if (responseCandidate.data && responseCandidate.status === 200) {
-              console.log("API Response:", responseCandidate.data);
+              console.log(candidatePayload, responseCandidate);
               showPopup({
                 title: "Saved",
                 msg: "Candidate Details Saved Successfully",
                 iconType: "success",
               });
-  
               localStorage.setItem(
                 "vrfCandidate",
                 JSON.stringify(candidatePayload)
               );
               const count = localStorage.getItem("vrfCount");
-              localStorage.setItem("vrfCount", count ? parseInt(count) + 1 : 1);
-  
+              if (count) {
+                localStorage.setItem("vrfCount", parseInt(count) + 1);
+              } else {
+                localStorage.setItem("vrfCount", 1);
+              }
               setTimeout(() => {
                 setBasicDetailsFilled(true);
               }, 1200);
             } else {
-              console.error("API Response Error:", responseCandidate);
               throw new Error("Failed to save candidate details.");
             }
-          } catch (error) {
-            console.error("API Error:", error.message || error);
-            alert("Failed to save candidate details. Please try again later.");
+          } else {
+            alert("Candidate details are incomplete. Please check the form.");
           }
         } else {
-          alert("Candidate details are incomplete. Please check the form.");
+          throw new Error("Service request failed. No result received.");
         }
       } catch (error) {
-        console.error("Error submitting service request:", error.message || error);
+        console.error(
+          "Error submitting service request:",
+          error.message || error
+        );
         alert("Failed to submit details. Please try again later.");
       }
       setSubmitLoading(false);
     } else {
-      alert("Please fill in all required fields correctly before submitting.");
+      // alert("Please fill in all required fields correctly before submitting.");
     }
   };
-  
 
   //#endregion
 
@@ -284,7 +257,6 @@ const VerificationForm = () => {
         localStorage.removeItem("vrfCount");
         setTimeout(() => {
           setPaymentPage(true);
-
         }, 1200);
       } else {
         showPopup({
@@ -429,30 +401,6 @@ const VerificationForm = () => {
   };
   //#endregion
 
-  const handleDeleteVerification= async ()=>{
-   const vcode = localStorage.getItem('vrfCode');
-    try {
-      const response = await axios.post(API_ENDPOINTS.verificationDelete, {
-        transactionType: "CASE",
-        verificationCode: vcode
-      });
-      if(response.status===200){
-        const resultArray = response.data.result.split(',');
-        setCandidateDetails((prevDetails) => ({
-          ...prevDetails,
-          cndName: "",
-          cndMobile: "",
-          cndMail: "",
-        }));
-        setDeleteStatus(false);
-        localStorage.setItem('vrfCode',resultArray[1]);
-        showPopup({title:"",msg:resultArray[2],iconType:"success"});
-      }
-     
-    } catch (error) {
-      console.error("Error fetching data:", error);
-    }
-  }
   return (
     <>
       <Pageheader
@@ -637,8 +585,8 @@ const VerificationForm = () => {
                               }`}
                               onClick={handleBasicDetailsSubmit}
                             >
-                              {!submitLoading ? (<>
-                                { deleteStatus ? ("Continue") :  ("Submit") } </>
+                              {!submitLoading ? (
+                                "Submit"
                               ) : (
                                 <>
                                   <Spinner
@@ -649,11 +597,6 @@ const VerificationForm = () => {
                                 </>
                               )}
                             </button>
-
-                            {deleteStatus &&
-                            
-                            <><button className="btn btn-danger ms-2" onClick={handleDeleteVerification} >Delete Current Data</button></>
-                            }
                           </>
                         )}
                       </Col>
@@ -661,10 +604,10 @@ const VerificationForm = () => {
                   </Card.Body>
                 </Card>
 
-                {basicDetailsFilled && !paymentPage  ? (
+                {basicDetailsFilled ? (
                   <>
                     <Row>
-                      <Col lg={12}>
+                      <Col lg={7}>
                         <Card className="shadow border-0">
                           <Card.Body>
                             {components.map((comp) => (
@@ -703,13 +646,37 @@ const VerificationForm = () => {
                           </Card.Body>
                         </Card>
                       </Col>
-                      <Col lg={2} >
-                      <button 
-                        onClick={handlePayment}
-                        className="btn-save w-100 fw-bold mt-3"
-                      >
-                        Pay Now
-                      </button>
+                      <Col lg={5}>
+                        <Card className="shadow border-0">
+                          <Card.Header className="bg-dark text-white text-center fw-bold">
+                            Your Billing
+                          </Card.Header>
+                          <Card.Body>
+                            <div className="d-flex justify-content-between mb-3">
+                              <span className="text-secondary">
+                                Gross ({componentCount} Components)
+                              </span>
+                              <span className="fw-bold">₹ {totalGross}</span>
+                            </div>
+                            <div className="d-flex justify-content-between mb-3">
+                              <span className="text-secondary">GST (18%)</span>
+                              <span className="fw-bold">₹ {totalGstAmt}</span>
+                            </div>
+                            <hr />
+                            <div className="d-flex justify-content-between mb-3">
+                              <span className="fw-bold">Total</span>
+                              <span className="fw-bold text-success">
+                                ₹ {totalAmount}
+                              </span>
+                            </div>
+                            <button
+                              onClick={handlePayment}
+                              className="btn-save w-100 fw-bold mt-3"
+                            >
+                              Pay Now
+                            </button>
+                          </Card.Body>
+                        </Card>
                       </Col>
                     </Row>
                   </>
@@ -758,6 +725,7 @@ const VerificationForm = () => {
                   />
                 </Col>
               </Row> */}
+
           </Card.Body>
         </Card>
       </>
@@ -768,32 +736,6 @@ const VerificationForm = () => {
             <Col lg={4} md={8} sm={12}>
               <Card className="shadow border-0">
                 <Card.Body>
-                  <Card className="shadow border-0">
-                    <Card.Header className="bg-dark text-white text-center fw-bold">
-                      Your Billing
-                    </Card.Header>
-                    <Card.Body>
-                      <div className="d-flex justify-content-between mb-3">
-                        <span className="text-secondary">
-                          Gross ({componentCount} Components)
-                        </span>
-                        <span className="fw-bold">₹ {totalGross}</span>
-                      </div>
-                      <div className="d-flex justify-content-between mb-3">
-                        <span className="text-secondary">GST (18%)</span>
-                        <span className="fw-bold">₹ {totalGstAmt}</span>
-                      </div>
-                      <hr />
-                      <div className="d-flex justify-content-between mb-3">
-                        <span className="fw-bold">Total</span>
-                        <span className="fw-bold text-success">
-                          ₹ {totalAmount}
-                        </span>
-                      </div>
-                   
-                    </Card.Body>
-                  </Card>
-
                   {/* Header Section */}
                   <h5 className="text-center mb-4">
                     Enter Card Details and Pay
