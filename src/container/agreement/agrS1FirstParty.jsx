@@ -1,28 +1,27 @@
 import { Row, Col, Form, Button } from "react-bootstrap";
-import { GenerateOtp, MaskInitial, showPopup } from "../../utils/validation";
-import { GetLoginInfo } from "../auth/logindata";
 import { useEffect, useState } from "react";
 import { API_ENDPOINTS } from "../../utils/apiConfig";
 import axios from "axios";
+import { showPopup } from "../../utils/validation";
+import { GetLoginInfo } from "../auth/logindata";
 
-const FirstPartyValidation = ({  goToStep }) => {
+const FirstPartyValidation = ({ goToStep }) => {
   const user = GetLoginInfo();
-  const [userData, setUserData] = useState(null); // Initially null to indicate loading
+  const [userData, setUserData] = useState(null); // Holds user data
   const [inputData, setInputData] = useState({
     fatherName: "",
     age: "",
     address: "",
-  });
-
-  const [validationErrors, setValidationErrors] = useState({
-    fatherName: "",
-    age: "",
-    address: "",
+    mobileNumber: "",
     email: "",
+    title: "",
+    firstName: "",
+    lastName: "",
   });
-
+  const [validationErrors, setValidationErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
 
+  // Fetch user data
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -30,30 +29,38 @@ const FirstPartyValidation = ({  goToStep }) => {
           customerType: user.userType,
           customerCode: user.userKey,
         });
+        const data = response.data;
 
-        if (Array.isArray(response.data) && response.data.length > 0) {
-          setUserData(response.data[0]);
+        if (Array.isArray(data) && data.length > 0) {
+          setUserData(data[0]);
         } else {
-          console.error("Unexpected data structure or empty array");
+          console.error("Unexpected data structure or empty response.");
         }
       } catch (error) {
-        console.error("Error fetching data:", error);
+        console.error("Error fetching user data:", error);
       }
     };
 
     fetchData();
   }, [user.userType, user.userKey]);
 
+  // Populate input fields with fetched data
   useEffect(() => {
     if (userData) {
       setInputData({
         fatherName: userData.father_name || "",
         age: userData.age || "",
         address: userData.address || "",
+        mobileNumber: userData.mobile_no || "",
+        email: userData.mail_id || "",
+        title: userData.Title || "",
+        firstName: userData.first_name || "",
+        lastName: userData.last_name || "",
       });
     }
   }, [userData]);
 
+  // Handle input change and clear validation errors
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setInputData((prevData) => ({
@@ -61,106 +68,103 @@ const FirstPartyValidation = ({  goToStep }) => {
       [name]: value,
     }));
 
-    // Clear any validation error when user changes input
     setValidationErrors((prevErrors) => ({
       ...prevErrors,
       [name]: "",
     }));
   };
 
+  // Field validation
   const validateFields = () => {
-    let errors = {};
+    const errors = {};
 
-    // Validate Father Name
     if (!inputData.fatherName.trim()) {
-      errors.fatherName = "Father's Name is required";
+      errors.fatherName = "Father's Name is required.";
     }
-
-    // Validate Age
     if (!inputData.age.trim()) {
-      errors.age = "Age is required";
+      errors.age = "Age is required.";
     }
-
-    // Validate Address
     if (!inputData.address.trim()) {
-      errors.address = "Address is required";
+      errors.address = "Address is required.";
     }
-
-    // Validate Email
-    if (!userData?.mail_id || !/\S+@\S+\.\S+/.test(userData.mail_id)) {
-      errors.email = "Please enter a valid email address";
+    if (!inputData.mobileNumber.trim() || !/^\d{10}$/.test(inputData.mobileNumber)) {
+      errors.mobileNumber = "Please provide a valid 10-digit mobile number.";
+    }
+    if (!inputData.email.trim() || !/\S+@\S+\.\S+/.test(inputData.email)) {
+      errors.email = "Please provide a valid email address.";
     }
 
     setValidationErrors(errors);
-
-    // Return true if there are no errors, otherwise false
     return Object.keys(errors).length === 0;
   };
 
+  // Handle form submission
   const handleSubmit = async () => {
-    if (!userData || !inputData) {
-      alert("Data is not fully loaded. Please wait.");
+    if (!validateFields()) {
       return;
     }
 
-    if (!validateFields()) {
-      return; // Prevent submission if there are validation errors
-    }
-
     setIsLoading(true);
-    const agr = JSON.parse(localStorage.getItem("rg_rcd"));
+    const agreementData = JSON.parse(localStorage.getItem("rg_rcd"));
     try {
-      const response = await axios.post(API_ENDPOINTS.agreementFirstParty, {
-        agreementCode: agr?.agr_k,
+      await axios.post(API_ENDPOINTS.agreementFirstParty, {
+        agreementCode: agreementData?.agr_k,
         partyType: userData.customer_type,
-        mobileNumber: userData.mobile_no,
-        title: userData.Title,
-        firstName: userData.first_name,
-        lastName: userData.last_name,
-        email: userData.mail_id,
+        mobileNumber: inputData.mobileNumber,
+        title: inputData.title,
+        firstName: inputData.firstName,
+        lastName: inputData.lastName,
+        email: inputData.email,
         fatherName: inputData.fatherName,
         age: inputData.age,
         address: inputData.address,
       });
 
-    //  console.log("Submit Response:", response.data.result);
-      showPopup({title:"Successfull",msg:"First Party data updated",iconType:"success"});
-     // alert("Data submitted successfully.");
+      showPopup({
+        title: "Successful",
+        msg: "First Party data updated.",
+        iconType: "success",
+      });
       sessionStorage.setItem("step_3_nextEnabled", "true");
-      setTimeout(()=>{
+      setTimeout(() => {
         goToStep(2);
-      },1200);
-      
+      }, 1200);
     } catch (error) {
-      showPopup({title:"Error",msg:error,iconType:"erroe"});
-     // console.error(`Error occurred: ${error}`);
-     // alert("Error submitting data. Please try again.");
+      showPopup({
+        title: "Error",
+        msg: "Failed to submit data. Please try again.",
+        iconType: "error",
+      });
     }
     setIsLoading(false);
   };
 
   return (
     <div>
-      <h4 className="fw-bolder text-danger-subtle">
-        First Party
-      </h4>
+      <h4 className="fw-bolder text-danger-subtle">First Party</h4>
 
       <Row className="mb-4">
         <Col lg={3} md={4} sm={6}>
           <Form.Group>
             <Form.Label>Mobile No</Form.Label>
             <Form.Control
-              value={MaskInitial({ input: user.userMobile, endIndex: 6 })}
-              disabled
+              name="mobileNumber"
+              value={inputData.mobileNumber}
+              onChange={handleInputChange}
+              isInvalid={!!validationErrors.mobileNumber}
             />
+            <Form.Control.Feedback type="invalid">
+              {validationErrors.mobileNumber}
+            </Form.Control.Feedback>
           </Form.Group>
         </Col>
         <Col lg={3} md={4} sm={6}>
           <Form.Group>
             <Form.Label>Email</Form.Label>
             <Form.Control
-              value={userData?.mail_id || ""}
-              
+              name="email"
+              value={inputData.email}
+              onChange={handleInputChange}
               isInvalid={!!validationErrors.email}
             />
             <Form.Control.Feedback type="invalid">
@@ -174,19 +178,31 @@ const FirstPartyValidation = ({  goToStep }) => {
         <Col xl={3}>
           <Form.Group>
             <Form.Label>Title</Form.Label>
-            <Form.Control value={userData?.Title || ""} disabled />
+            <Form.Control
+              name="title"
+              value={inputData.title}
+              onChange={handleInputChange}
+            />
           </Form.Group>
         </Col>
         <Col lg={3} md={4} sm={6}>
           <Form.Group>
             <Form.Label>First Name</Form.Label>
-            <Form.Control value={userData?.first_name || ""} disabled />
+            <Form.Control
+              name="firstName"
+              value={inputData.firstName}
+              onChange={handleInputChange}
+            />
           </Form.Group>
         </Col>
         <Col lg={3} md={4} sm={6}>
           <Form.Group>
             <Form.Label>Last Name</Form.Label>
-            <Form.Control value={userData?.last_name || ""} disabled />
+            <Form.Control
+              name="lastName"
+              value={inputData.lastName}
+              onChange={handleInputChange}
+            />
           </Form.Group>
         </Col>
         <Col lg={3} md={4} sm={6}>
@@ -235,14 +251,15 @@ const FirstPartyValidation = ({  goToStep }) => {
 
       <Row>
         <Col>
-          <Button onClick={handleSubmit} className="btn btn-primary float-end mt-3" disabled={isLoading}>
-            {isLoading ? 'Submitting...' : 'Next'}
+          <Button
+            onClick={handleSubmit}
+            className="btn btn-primary float-end mt-3"
+            disabled={isLoading}
+          >
+            {isLoading ? "Submitting..." : "Next"}
           </Button>
         </Col>
-     
       </Row>
-      <p> <span  className="text-danger">Note:</span> To Update those disabled fields. Go to Profile</p>
-    
     </div>
   );
 };

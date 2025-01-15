@@ -239,7 +239,7 @@ const RentalDetails = ({ goToStep }) => {
   return (
     <div>
       <h5>Rental Details</h5>
-      <div className="container">
+      <div >
         <Row>
           <Col xl={3} lg={3} md={4} sm={6}>
             <Form.Group>

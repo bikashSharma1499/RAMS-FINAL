@@ -2,26 +2,29 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { Badge, Button } from "react-bootstrap";
 import Pageheader from "../../components/pageheader/pageheader";
+import { GetLoginInfo } from "../auth/logindata";
 
 function VerificationListData() {
   const [data, setData] = useState([]); // State to hold API data
   const [loading, setLoading] = useState(true); // State for loading indicator
   const [error, setError] = useState(null); // State for error handling
 
+
   useEffect(() => {
     const fetchData = async () => {
+      const user =await GetLoginInfo();
       try {
         const response = await axios.post(
           "https://api.4slonline.com/rams/api/Service/VerificationList",
           {
-            clientCode: "1",
+            clientCode: user.userKey,
           }
         );
         const sortedData = (response.data || []).sort(
           (a, b) => new Date(b.entry_date) - new Date(a.entry_date)
         );
         const filteredData = sortedData.filter(
-          (item) => item.verification_status !== "Pending"
+          (item) => item.verification_status !== "Cancel"
         );
         setData(filteredData);
       } catch (err) {
@@ -82,7 +85,7 @@ function VerificationListData() {
                       <td>{row.service_name}</td>
                       <td>{getStatusBadge(row.verification_status)}</td>
                       <td>
-                        {row.verification_status === "VERIFY" && (
+                        {row.verification_status === "Verify" && (
                           <a
                             target="_blank"
                             href="https://www.redcheckes.com/pay/report.pdf"
