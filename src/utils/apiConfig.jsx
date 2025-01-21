@@ -26,6 +26,7 @@ export const API_ENDPOINTS = {
 
   propertyList:BASE_URL+"Customer/CustomerPropertyList",
   ManageProperty:BASE_URL+"Customer/CustomerProperty",
+  propertyStatus:BASE_URL+"Property/PropertyStatus",
   PropertyRental:BASE_URL+"Customer/CustomerPropertyRate",
   PropertyRentalPriceList:BASE_URL+"Customer/CustomerPropertyRateList",
 

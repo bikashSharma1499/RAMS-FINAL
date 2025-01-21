@@ -3,7 +3,6 @@ import axios from "axios";
 import { API_ENDPOINTS } from "../../utils/apiConfig";
 
 async function SetLoginInfo(type, key) {
- // debugger;
   try {
     const customer = await getCustomerByCode(type, key);
     if (!customer) {

@@ -246,11 +246,14 @@ function PropertyListing() {
   return (
     <>
       <Pageheader
-        title="Property Listing"
-        heading="Customer"
-        active="Property Listing"
+        title="Property Registration"
+        heading="Property"
+        active="Registration"
       />
-      <Card>
+      {GetLoginInfo().userType!=='Tenant' ? (
+
+<>
+<Card>
         <Card.Body>
           {showList ? (
             <>
@@ -466,6 +469,12 @@ function PropertyListing() {
           )}
         </Card.Body>
       </Card>
+</>
+
+      ) :( <h4 className=" text-primary ">
+        Opps ! 😶 You Cannot add any property. Since your a Tenant.
+      </h4>) }
+    
     </>
   );
 }

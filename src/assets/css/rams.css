@@ -573,3 +573,31 @@ table.dataTable tbody tr.parent td.dtr-control::before {
   margin-top: 5px;
   color: #6c757d;
 }
+
+
+.badge-success{
+  background-color: green;
+  border-radius: 20px;
+  color: white;
+  padding: 5px;
+}
+.badge-warning{
+  background-color: yellow;
+  color: black;
+  border-radius: 20px;
+  padding: 5px;
+}
+
+.badge-secondary{
+  background-color: rgb(50, 50, 45);
+  color: rgb(255, 255, 255);
+  border-radius: 20px;
+  padding: 5px;
+}
+
+.badge-danger{
+  background-color: red;
+  color: rgb(255, 255, 255);
+  border-radius: 20px;
+  padding: 5px;
+}

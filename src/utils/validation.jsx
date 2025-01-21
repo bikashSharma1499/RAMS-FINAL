@@ -5,8 +5,22 @@ const SECRET_KEY = '4f91e2c9b1a76f0d2b3f19c1e7a48e3d2c4a5b6d8f9e0a1b3c4d5e6f7a8b
 
 // Encryption function
 export const encryptKeyNormal = (value) => {
-  return CryptoJS.AES.encrypt(value, SECRET_KEY).toString();
+  console.log("Value to encrypt:", value);
+  
+  let encrypted = "";
+
+  // Check if the value is a string; otherwise, use "demo"
+  if (typeof value === "string" && value.trim() !== "") {
+    encrypted = CryptoJS.AES.encrypt(value, SECRET_KEY).toString();
+  } else {
+    console.warn("Invalid value detected, using default value 'demo'");
+    encrypted = CryptoJS.AES.encrypt("demo", SECRET_KEY).toString();
+  }
+  
+  return encrypted;
 };
+
+
 
 // Decryption function
 export const decryptKeyNormal = (value) => {

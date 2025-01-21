@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-
+const proxyUrl = "https://cors-anywhere.herokuapp.com/";
 const InstamojoPayment = () => {
   const [amount, setAmount] = useState("");
   const [name, setName] = useState("");
@@ -26,8 +26,9 @@ const InstamojoPayment = () => {
     };
 
     try {
+      debugger;
       // Step 1: Generate Bearer Token
-      const tokenResponse = await fetch("https://api.instamojo.com/oauth2/token/", options);
+      const tokenResponse = await fetch( proxyUrl+"https://api.instamojo.com/oauth2/token/", options);
       const tokenData = await tokenResponse.json();
 
       if (!tokenData.access_token) {
@@ -52,12 +53,11 @@ const InstamojoPayment = () => {
           email,
           phone: mobile,
           redirect_url: "localhost:5173/verification/payment-history", // Replace with your redirect URL
-          send_email: false,
-          allow_repeated_payments: false,
+          send_email: true,
         }),
       };
 
-      const paymentResponse = await fetch("https://api.instamojo.com/v2/payment_requests/", paymentOptions);
+      const paymentResponse = await fetch(proxyUrl+"https://api.instamojo.com/v2/payment_requests/", paymentOptions);
       const paymentData = await paymentResponse.json();
 
       if (!paymentData.payment_request || !paymentData.payment_request.longurl) {
@@ -74,7 +74,7 @@ const InstamojoPayment = () => {
       }
     } catch (error) {
       console.error("Error:", error);
-      alert("An error occurred while processing the payment. Please try again.");
+      alert(error);
     }
   };
 

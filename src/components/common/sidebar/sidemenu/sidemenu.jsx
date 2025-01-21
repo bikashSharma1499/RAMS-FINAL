@@ -1,7 +1,6 @@
 
 export const MENUITEMS = [
   {
-    menutitle: 'MAIN',
     Items: [
       {
         icon: (<i className="side-menu__icon bx bx-home"></i>),
@@ -12,13 +11,11 @@ export const MENUITEMS = [
       title: 'Dashboard',
       path: `${import.meta.env.BASE_URL}dashboard`, // Direct path to Dashboard
       badge: '',
-      badgetxt: '1',
       class: 'badge bg-warning-transparent ms-2',
       }
     ]
   },
   {
-    menutitle: "Main Navigation",
     Items: [
 
       {
@@ -27,14 +24,14 @@ export const MENUITEMS = [
         Name: '',
         active: false,
         selected: false,
-        title: "Customer",
+        title: "Lessor and Lessee",
         badge: '',
-        badgetxt: 'New',
+      
         class: ' badge bg-secondary-transparent ms-2',
         children: [
           {
             path: `${import.meta.env.BASE_URL}customer/list`,
-            title: "List",
+            title: "Registration",
             type: "link",
             active: false,
             selected: false,
@@ -52,7 +49,7 @@ export const MENUITEMS = [
         selected: false,
         title: "Agreement",
         badge: '',
-        badgetxt: 'New',
+      
         class: ' badge bg-secondary-transparent ms-2',
         children: [
           {
@@ -87,19 +84,12 @@ export const MENUITEMS = [
         selected: false,
         title: "Property",
         badge: '',
-        badgetxt: 'New',
+      
         class: 'badge bg-secondary-transparent ms-2',
         children: [
           {
-            path: `${import.meta.env.BASE_URL}property/dashboard`,
-            title: "Dashboard",
-            type: "link",
-            active: false,
-            selected: false,
-          },
-          {
             path: `${import.meta.env.BASE_URL}property/listing`,
-            title: "Listing",
+            title: "Registration",
             type: "link",
             active: false,
             selected: false,
@@ -107,13 +97,6 @@ export const MENUITEMS = [
           {
             path: `${import.meta.env.BASE_URL}property/list`,
             title: "List",
-            type: "link",
-            active: false,
-            selected: false,
-          },
-          {
-            path: `${import.meta.env.BASE_URL}property/transaction`,
-            title: "Transaction",
             type: "link",
             active: false,
             selected: false,
@@ -129,16 +112,9 @@ export const MENUITEMS = [
         selected: false,
         title: "Verification",
         badge: '',
-        badgetxt: 'New',
+      
         class: 'badge bg-secondary-transparent ms-2',
         children: [
-          {
-            path: `${import.meta.env.BASE_URL}verification/dashboard`,
-            title: "Dashboard",
-            type: "link",
-            active: false,
-            selected: false,
-          },
           {
             path: `${import.meta.env.BASE_URL}verification/new`,
             title: "New",

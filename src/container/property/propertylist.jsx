@@ -6,7 +6,7 @@ import { GetLoginInfo } from "../auth/logindata"; // Assuming this is your utili
 import { API_ENDPOINTS } from "../../utils/apiConfig";
 import PropertyListData from "./propertyListData";
 import Pageheader from "../../components/pageheader/pageheader";
-import DataTableComponent from "./testList";
+import DataTableComponent from "./propertyListData";
 DataTable.use(DT);
 
 function PropertyList() {
@@ -14,7 +14,7 @@ function PropertyList() {
   return (
  <>
    <Pageheader
-                title="Property List"
+                title="My Property"
                 heading="Property"
                 active="Property List"
               />
