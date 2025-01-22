@@ -54,10 +54,7 @@ function PropertyListing() {
 
       const checkProcess = localStorage.getItem("prop_process");
       const processData = JSON.parse(checkProcess);
-      if (
-        !processData ||
-        (processData.process_p === "0" && processData.actual_p == "U")
-      ) {
+      if (!processData ||  (processData.process_p === "0" && processData.actual_p == "U")  ) {
         const data = {
           inital_p: "I",
           actual_p: "I",
@@ -250,231 +247,241 @@ function PropertyListing() {
         heading="Property"
         active="Registration"
       />
-      {GetLoginInfo().userType!=='Tenant' ? (
+      {GetLoginInfo().userType !== "Tenant" ? (
+        <>
+          <Card>
+            <Card.Body>
+              {showList ? (
+                <>
+                  <section className="property-section py-4">
+                    <Row>
+                      {/* Header Section */}
+                      <Col xs={12} className="mb-3">
+                        <button
+                          className="btn-new float-end d-flex align-items-center"
+                          onClick={() => setShowList(false)}
+                        >
+                          <i className="bi bi-plus-circle me-2"></i>
+                          <span>New Property</span>
+                        </button>
+                      </Col>
 
-<>
-<Card>
-        <Card.Body>
-          {showList ? (
-            <>
-              <section className="property-section py-4">
-                <Row>
-                  {/* Header Section */}
-                  <Col xs={12} className="mb-3">
-                    <button
-                      className="btn-new float-end d-flex align-items-center"
-                      onClick={() => setShowList(false)}
-                    >
-                      <i className="bi bi-plus-circle me-2"></i>
-                      <span>New Property</span>
-                    </button>
-                  </Col>
+                      {/* Steps Section */}
+                      <Col md={7}>
+                        <h4 className="property-header">
+                          List your property within minutes...
+                        </h4>
+                        <ul className="steps-list list-unstyled">
+                          <li className="d-flex align-items-center mb-3">
+                            <i className="bi bi-phone-vibrate me-3 text-primary fs-4"></i>
+                            <span>Verify the Landlord's Number</span>
+                          </li>
+                          <li className="d-flex align-items-center mb-3">
+                            <i className="bi bi-house-door me-3 text-success fs-4"></i>
+                            <span>Fill Basic Property Details</span>
+                          </li>
+                          <li className="d-flex align-items-center mb-3">
+                            <i className="bi bi-tools me-3 text-warning fs-4"></i>
+                            <span>Add Amenities</span>
+                          </li>
+                          <li className="d-flex align-items-center mb-3">
+                            <i className="bi bi-wrench me-3 text-danger fs-4"></i>
+                            <span>Maintenance Details</span>
+                          </li>
+                          <li className="d-flex align-items-center mb-3">
+                            <i className="bi bi-currency-dollar me-3 text-info fs-4"></i>
+                            <span>Rental Information</span>
+                          </li>
+                        </ul>
+                      </Col>
+                      <Col md={5}>
+                        <img
+                          src="https://www.infotrack.co.uk/media/zbgjrcul/hero-2-search.png?height=457&width=840&quality=75&mode=Pad&center=0.5,0.5&bgcolor=transparent"
+                          height={320}
+                        ></img>
+                      </Col>
 
-                  {/* Steps Section */}
-                  <Col md={7}>
-                    <h4 className="property-header">
-                      List your property within minutes...
-                    </h4>
-                    <ul className="steps-list list-unstyled">
-                      <li className="d-flex align-items-center mb-3">
-                        <i className="bi bi-phone-vibrate me-3 text-primary fs-4"></i>
-                        <span>Verify the Landlord's Number</span>
-                      </li>
-                      <li className="d-flex align-items-center mb-3">
-                        <i className="bi bi-house-door me-3 text-success fs-4"></i>
-                        <span>Fill Basic Property Details</span>
-                      </li>
-                      <li className="d-flex align-items-center mb-3">
-                        <i className="bi bi-tools me-3 text-warning fs-4"></i>
-                        <span>Add Amenities</span>
-                      </li>
-                      <li className="d-flex align-items-center mb-3">
-                        <i className="bi bi-wrench me-3 text-danger fs-4"></i>
-                        <span>Maintenance Details</span>
-                      </li>
-                      <li className="d-flex align-items-center mb-3">
-                        <i className="bi bi-currency-dollar me-3 text-info fs-4"></i>
-                        <span>Rental Information</span>
-                      </li>
-                    </ul>
-                  </Col>
-                  <Col md={5}>
-                    <img
-                      src="https://www.infotrack.co.uk/media/zbgjrcul/hero-2-search.png?height=457&width=840&quality=75&mode=Pad&center=0.5,0.5&bgcolor=transparent"
-                      height={320}
-                    ></img>
-                  </Col>
-
-                  {/* DataTable Section */}
-                </Row>
-              </section>
-            </>
-          ) : (
-            <>
-              <Row>
-                {mobileInput ? (
-                  <>
-                    <Col lg={3} md={4} sm={6}>
-                      <Form.Group className="mb-4">
-                        <Form.Label className="fs-5 fw-bold text-secondary">
-                          Landlord Mobile No
-                        </Form.Label>
-                        <InputGroup>
-                          <InputGroup.Text>
-                            <FaPhoneAlt size={20} color="#007bff" />
-                          </InputGroup.Text>
-                          <Form.Control
-                            type="text"
-                            onChange={(e) => setLandlordMobile(e.target.value)}
-                            value={landlordMobile}
-                            disabled={setInputDisable}
-                            maxLength={10}
-                            placeholder="Enter mobile number"
-                            className="input-field"
-                          />
-                        </InputGroup>
-                        <Form.Text className="text-muted">
-                          Enter the 10-digit mobile number of the landlord.
-                        </Form.Text>
-                      </Form.Group>
-                    </Col>
-                    <Col lg={3} md={4} sm={6}>
-                      <button
-                        onClick={sendOTP}
-                        style={{ position: "relative", top: "14px" }}
-                        disabled={isLoading}
-                        className=" btn-save mt-4"
-                      >
-                        {" "}
-                        {isLoading ? "Sending...." : "Send OTP"}
-                      </button>
-                    </Col>
-                  </>
-                ) : (
-                  <>
-                    <Col lg={4} md={8} className="mx-auto">
-                      {!validated ? (
-                        <>
-                          <Row>
-                            <Col className="text-center">
-                              <h6>
-                                {" "}
-                                Enter OTP Sent to Mobile No {mobileInput}{" "}
-                                <button
-                                  onClick={handleChangeNumber}
-                                  className=" border-0 text-danger-emphasis  bg-transparent  btn-link"
-                                >
-                                  Change
-                                </button>
-                              </h6>
-                            </Col>
-                          </Row>
-                          <Row>
-                            <div className="col-3">
-                              <Form.Control
-                                type="text"
-                                className="form-control-lg text-center"
-                                id="one"
-                                maxLength={1}
-                                autoComplete="off"
-                                onChange={() => handleInputChange("one", "two")}
-                                ref={inputRefs.one}
-                              />
-                            </div>
-                            <div className="col-3">
-                              <Form.Control
-                                type="text"
-                                className="form-control-lg text-center"
-                                id="two"
-                                maxLength={1}
-                                autoComplete="off"
-                                onChange={() =>
-                                  handleInputChange("two", "three")
-                                }
-                                ref={inputRefs.two}
-                              />
-                            </div>
-                            <div className="col-3">
-                              <Form.Control
-                                type="text"
-                                className="form-control-lg text-center"
-                                id="three"
-                                maxLength={1}
-                                autoComplete="off"
-                                onChange={() =>
-                                  handleInputChange("three", "four")
-                                }
-                                ref={inputRefs.three}
-                              />
-                            </div>
-                            <div className="col-3">
-                              <Form.Control
-                                type="text"
-                                className="form-control-lg text-center"
-                                id="four"
-                                maxLength={1}
-                                autoComplete="off"
-                                // onChange={() => handleOtpVerify}
-                                ref={inputRefs.four}
-                              />
-                            </div>
-                            <div className="col-12">
-                              {error && (
-                                <div className="text-danger mt-2">{error}</div>
-                              )}
-                            </div>
-                          </Row>
-                          <Row>
-                            <Col className="text-center">
-                              <button
-                                onClick={handleOtpSubmit}
-                                disabled={isLoading}
-                                className="mt-3 btn-save mx-auto"
-                              >
-                                {" "}
-                                {isLoading ? "Validating..." : "Validate"}
-                              </button>
-                            </Col>
-                          </Row>
-                        </>
-                      ) : (
-                        ""
-                      )}
-                    </Col>
-                  </>
-                )}
-              </Row>
-
-              {validated ? (
+                      {/* DataTable Section */}
+                    </Row>
+                  </section>
+                </>
+              ) : (
                 <>
                   <Row>
-                    <Col>
-                      <PropertyMultistepForm />
-                    </Col>
+                    {mobileInput ? (
+                      <>
+                        <Col lg={3} md={4} sm={6}>
+                          <Form.Group className="mb-4">
+                            <Form.Label className="fs-5 fw-bold text-secondary">
+                              Landlord Mobile No
+                            </Form.Label>
+                            <InputGroup>
+                              <InputGroup.Text>
+                                <FaPhoneAlt size={20} color="#007bff" />
+                              </InputGroup.Text>
+                              <Form.Control
+                                type="text"
+                                onChange={(e) =>
+                                  setLandlordMobile(e.target.value)
+                                }
+                                value={landlordMobile}
+                                disabled={setInputDisable}
+                                maxLength={10}
+                                placeholder="Enter mobile number"
+                                className="input-field"
+                              />
+                            </InputGroup>
+                            <Form.Text className="text-muted">
+                              Enter the 10-digit mobile number of the landlord.
+                            </Form.Text>
+                          </Form.Group>
+                        </Col>
+                        <Col lg={3} md={4} sm={6}>
+                          <button
+                            onClick={sendOTP}
+                            style={{ position: "relative", top: "14px" }}
+                            disabled={isLoading}
+                            className=" btn-save mt-4"
+                          >
+                            {" "}
+                            {isLoading ? "Sending...." : "Send OTP"}
+                          </button>
+                        </Col>
+                      </>
+                    ) : (
+                      <>
+                        <Col lg={4} md={8} className="mx-auto">
+                          {!validated ? (
+                            <>
+                              <Row>
+                                <Col className="text-center">
+                                  <h6>
+                                    {" "}
+                                    Enter OTP Sent to Mobile No {
+                                      mobileInput
+                                    }{" "}
+                                    <button
+                                      onClick={handleChangeNumber}
+                                      className=" border-0 text-danger-emphasis  bg-transparent  btn-link"
+                                    >
+                                      Change
+                                    </button>
+                                  </h6>
+                                </Col>
+                              </Row>
+                              <Row>
+                                <div className="col-3">
+                                  <Form.Control
+                                    type="text"
+                                    className="form-control-lg text-center"
+                                    id="one"
+                                    maxLength={1}
+                                    autoComplete="off"
+                                    onChange={() =>
+                                      handleInputChange("one", "two")
+                                    }
+                                    ref={inputRefs.one}
+                                  />
+                                </div>
+                                <div className="col-3">
+                                  <Form.Control
+                                    type="text"
+                                    className="form-control-lg text-center"
+                                    id="two"
+                                    maxLength={1}
+                                    autoComplete="off"
+                                    onChange={() =>
+                                      handleInputChange("two", "three")
+                                    }
+                                    ref={inputRefs.two}
+                                  />
+                                </div>
+                                <div className="col-3">
+                                  <Form.Control
+                                    type="text"
+                                    className="form-control-lg text-center"
+                                    id="three"
+                                    maxLength={1}
+                                    autoComplete="off"
+                                    onChange={() =>
+                                      handleInputChange("three", "four")
+                                    }
+                                    ref={inputRefs.three}
+                                  />
+                                </div>
+                                <div className="col-3">
+                                  <Form.Control
+                                    type="text"
+                                    className="form-control-lg text-center"
+                                    id="four"
+                                    maxLength={1}
+                                    autoComplete="off"
+                                    // onChange={() => handleOtpVerify}
+                                    ref={inputRefs.four}
+                                  />
+                                </div>
+                                <div className="col-12">
+                                  {error && (
+                                    <div className="text-danger mt-2">
+                                      {error}
+                                    </div>
+                                  )}
+                                </div>
+                              </Row>
+                              <Row>
+                                <Col className="text-center">
+                                  <button
+                                    onClick={handleOtpSubmit}
+                                    disabled={isLoading}
+                                    className="mt-3 btn-save mx-auto"
+                                  >
+                                    {" "}
+                                    {isLoading ? "Validating..." : "Validate"}
+                                  </button>
+                                </Col>
+                              </Row>
+                            </>
+                          ) : (
+                            ""
+                          )}
+                        </Col>
+                      </>
+                    )}
                   </Row>
+
+                  {validated ? (
+                    <>
+                      <Row>
+                        <Col>
+                          <PropertyMultistepForm />
+                        </Col>
+                      </Row>
+                    </>
+                  ) : (
+                    ""
+                  )}
+                </>
+              )}
+              {!showList ? (
+                <>
+                  <button
+                    className="btn btn-cancel mt-5"
+                    onClick={handleCancel}
+                  >
+                    Cancel
+                  </button>
                 </>
               ) : (
                 ""
               )}
-            </>
-          )}
-          {!showList ? (
-            <>
-              <button className="btn btn-cancel mt-5" onClick={handleCancel}>
-                Cancel
-              </button>
-            </>
-          ) : (
-            ""
-          )}
-        </Card.Body>
-      </Card>
-</>
-
-      ) :( <h4 className=" text-primary ">
-        Opps ! 😶 You Cannot add any property. Since your a Tenant.
-      </h4>) }
-    
+            </Card.Body>
+          </Card>
+        </>
+      ) : (
+        <h4 className=" text-primary ">
+          Opps ! 😶 You Cannot add any property. Since your a Tenant.
+        </h4>
+      )}
     </>
   );
 }

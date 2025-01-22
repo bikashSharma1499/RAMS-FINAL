@@ -264,11 +264,13 @@ function PropertyBasicDetails({ goToStep }) {
       return updatedDetails;
     });
   };
+
+
   const handleSubmit = async () => {
     
     SetIsLoading(true);
 
-    if (!addressDetails) {
+    if (!addressDetails.property_name==="" || !addressDetails.i_main_address==="") {
       alert("Please fill in all fields");
       return;
     }
@@ -385,6 +387,7 @@ function PropertyBasicDetails({ goToStep }) {
                 value={addressDetails.i_property_name}
                 autoComplete="off"
                 onChange={handleInputChange}
+                required
               />
             </Form.Group>
           </Col>
