@@ -107,7 +107,7 @@ export const MENUITEMS = [
       {
         icon: (<i className="bx bx-task side-menu__icon"></i>),
         type: "sub",
-        Name: '',
+        Name: '',                               
         active: false,
         selected: false,
         title: "Verification",

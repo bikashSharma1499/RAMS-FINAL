@@ -144,7 +144,7 @@ const DataTableComponent = () => {
     {
       name: "Actions",
       cell: (row) => (
-        <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
+        <div style={{ display: "flex", gap: "5px", flexWrap: "wrap" }}>
       {row.display_status === "Active" && (
   <>
     <button
@@ -203,7 +203,7 @@ const DataTableComponent = () => {
       ignoreRowClick: true,
       allowOverflow: true,
       button: true,
-      width: "300px",
+      width: "210px",
     },
   ];
 

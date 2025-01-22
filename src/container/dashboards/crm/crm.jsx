@@ -26,7 +26,10 @@ function Crm() {
       }
     };
   
+   setTimeout(() => {
     fetchUserData();
+   }, 1000);
+   
   }, []);
 
   const handleNavigate=(type)=>{
@@ -86,8 +89,8 @@ function Crm() {
                       </span>
                     </div>
                     <div className="flex-fill ms-3">
-                      <p className="text-muted mb-0">Total Properties</p>
-                      <h4 className="fw-semibold mt-1">12,500</h4>{" "}
+                      <p className="text-muted mb-0">No of Properties</p>
+                      <h4 className="fw-semibold mt-1">0</h4>{" "}
                       {/* Reasonable number */}
                       <div className="d-flex align-items-center justify-content-between mt-2">
                         <div>
@@ -122,8 +125,8 @@ function Crm() {
                     <div className="flex-fill ms-3">
                       <div className="d-flex align-items-center justify-content-between flex-wrap">
                         <div>
-                          <p className="text-muted mb-0">Total Agreements</p>
-                          <h4 className="fw-semibold mt-1">$56,562</h4>
+                          <p className="text-muted mb-0">No of Agreements</p>
+                          <h4 className="fw-semibold mt-1">0</h4>
                         </div>
                         <div id="crm-total-revenue"></div>
                       </div>
@@ -158,8 +161,8 @@ function Crm() {
                       </span>
                     </div>
                     <div className="flex-fill ms-3">
-                      <p className="text-muted mb-0">Total Verifications</p>
-                      <h4 className="fw-semibold mt-1">15,700</h4>{" "}
+                      <p className="text-muted mb-0">No of Verifications</p>
+                      <h4 className="fw-semibold mt-1">0</h4>{" "}
                       {/* Reasonable number */}
                       <div className="d-flex align-items-center justify-content-between mt-2">
                         <div>
@@ -192,8 +195,8 @@ function Crm() {
                       </span>
                     </div>
                     <div className="flex-fill ms-3">
-                      <p className="text-muted mb-0">Tenants</p>
-                      <h4 className="fw-semibold mt-1">10,200</h4>{" "}
+                      <p className="text-muted mb-0">No of Tenants</p>
+                      <h4 className="fw-semibold mt-1">0</h4>{" "}
                       {/* Reasonable number */}
                       <div className="d-flex align-items-center justify-content-between mt-2">
                         <div>
@@ -224,8 +227,8 @@ function Crm() {
                       </span>
                     </div>
                     <div className="flex-fill ms-3">
-                      <p className="text-muted mb-0">Today Collections</p>
-                      <h4 className="fw-semibold mt-1">10,200</h4>{" "}
+                      <p className="text-muted mb-0">Current Month Collection</p>
+                      <h4 className="fw-semibold mt-1">0</h4>{" "}
                       {/* Reasonable number */}
                       <div className="d-flex align-items-center justify-content-between mt-2">
                         <div>
@@ -256,8 +259,8 @@ function Crm() {
                       </span>
                     </div>
                     <div className="flex-fill ms-3">
-                      <p className="text-muted mb-0">Expring Agreements</p>
-                      <h4 className="fw-semibold mt-1">10,200</h4>{" "}
+                      <p className="text-muted mb-0">Agreements Expiring</p>
+                      <h4 className="fw-semibold mt-1">0</h4>{" "}
                       {/* Reasonable number */}
                       <div className="d-flex align-items-center justify-content-between mt-2">
                         <div>
