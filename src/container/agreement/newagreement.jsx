@@ -25,7 +25,7 @@ function NewAgreement() {
   const [showOtp, setShowOtp] = useState(false);
   const [inputOtp, setInputOtp] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [showAgreementList, setShowAgreementList] = useState(false);
+  const [showAgreementList, setShowAgreementList] = useState(true);
   const [showResendOtp, setShowResendOtp] = useState(false);
   const [timeLeft, setTimeLeft] = useState(120); // Timer initialized to 120 seconds
   const [isActive, setIsActive] = useState(false); // To track if the timer should run
@@ -44,7 +44,7 @@ function NewAgreement() {
     try {
       const deviceId = (await deviceInfo()).ip; // Ensure deviceInfo is working correctly
       const response = await axios.post(API_ENDPOINTS.otpAuthentication, {
-        transactionType: "Login",
+        transactionType: "Auth",
         customerType: user.userType, // Replace with the correct value
         userMobileNo: user.userType === "Landlord" ? user.userMobile : mobileNo,
         diviceId: deviceId,
@@ -162,7 +162,7 @@ function NewAgreement() {
       timer = setInterval(() => {
         setTimeLeft((prevTime) => prevTime - 1);
       }, 1000);
-    }else{
+    } else {
       setIsActive(false);
     }
 
@@ -343,18 +343,17 @@ function NewAgreement() {
                                   />
                                 </div>
                               </Row>
-                   
-                                    <Row>
-                                    <Col>
-                                      {error && (
-                                        <div className="text-danger mt-2">
-                                          {error}
-                                        </div>
-                                      )}
-                                    </Col>
-                                  </Row>
-                  
-                          
+
+                              <Row>
+                                <Col>
+                                  {error && (
+                                    <div className="text-danger mt-2">
+                                      {error}
+                                    </div>
+                                  )}
+                                </Col>
+                              </Row>
+
                               <Row>
                                 <Col xs={12}>
                                   {isActive ? (
@@ -380,7 +379,6 @@ function NewAgreement() {
                                     </>
                                   ) : (
                                     <button
-                                      
                                       onClick={handleProceed}
                                       className="mt-3  btn btn-attractive"
                                     >
@@ -398,17 +396,32 @@ function NewAgreement() {
                   )}
                 </>
               ) : (
-                <>
-                  <div className=" w-100  d-flex justify-content-between">
-                    <h5>Continue or Create a new Agreement</h5>
-                    <button className=" btn-new" onClick={() => setShowAgreementList(false)}>
-                      {" "}
-                      <i className=" bi-plus-circle"></i> Create Agreement{" "}
+                <div
+                  style={{
+                    height: "70vh",
+                    display: "grid",
+                    placeContent: "center",
+                    alignContent: "center",
+                    background:"#f0f3fd"
+                  }}
+                >       <h5 className="text-center mb-3 fw-bold">Choose your desired Option</h5>
+                  <div className="action-buttons d-flex justify-content-center">
+             {user.userType!=='Landlord' && 
+                    <button className=" btn-agr-lnd me-3 d-flex align-items-center">
+                      <i className="bi bi-person-check me-2"></i>
+                      Agreement with Landlord
+                    </button>}
+                    {user.userType!=='Tenant' && 
+                    <button
+                      className=" btn-agr-tnt d-flex align-items-center"
+                      onClick={() => setShowAgreementList(false)}
+                    >
+                      <i className="bi bi-person-lines-fill me-2"></i>
+                      Agreement with Tenant
                     </button>
+}
                   </div>
-                  
-                  {/* <AgreementPendingList /> */}
-                </>
+                </div>
               )}
             </Card.Body>
           </Card>

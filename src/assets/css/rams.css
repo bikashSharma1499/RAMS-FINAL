@@ -601,3 +601,29 @@ table.dataTable tbody tr.parent td.dtr-control::before {
   border-radius: 20px;
   padding: 5px;
 }
+
+.btn-agr-tnt{
+  padding: 20px;
+  border: 1px solid #99ff93;
+  border-radius: 20px;
+  background-color: #99ff93;
+font-size: 16px;
+box-shadow: 2px 2px green;
+}
+
+.btn-agr-tnt:hover{
+  background-color: #4add42;
+  color: white;
+}
+.btn-agr-lnd{
+  padding: 20px;
+  border: 1px solid #dfdf1d;
+  border-radius: 20px;
+  background-color: #dfdf1d;
+  font-size: 16px;
+  box-shadow: 2px 2px #72721c;
+}
+.btn-agr-lnd:hover{
+  background-color: #bcbc07;
+  color: white;
+}
