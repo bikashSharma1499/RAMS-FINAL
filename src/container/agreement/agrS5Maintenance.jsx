@@ -62,7 +62,7 @@ const Maintenance = ({ goToStep }) => {
 
   return (
     <div>
-      <h4 className=" text-dark">Maintenance</h4>
+       <h3 className="fw-bolder  text-secondary-emphasis">Maintenance {"(Tenant)"} </h3>
       <p><span className=" text-danger fw-bold"> Note:</span> Check those boxes which will be maintained by Tenant</p>
       <Row>
         <Col md={12}>

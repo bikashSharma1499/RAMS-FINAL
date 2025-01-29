@@ -141,7 +141,7 @@ const FirstPartyValidation = ({ goToStep }) => {
 
   return (
     <div>
-      <h4 className="fw-bolder text-danger-subtle">First Party</h4>
+      <h3 className="fw-bolder  text-secondary-emphasis">First Party Details {"(Landlord)"} </h3>
 
       <Row className="mb-4">
         <Col lg={3} md={4} sm={6}>
@@ -151,6 +151,7 @@ const FirstPartyValidation = ({ goToStep }) => {
               name="mobileNumber"
               value={inputData.mobileNumber}
               onChange={handleInputChange}
+              disabled
               isInvalid={!!validationErrors.mobileNumber}
             />
             <Form.Control.Feedback type="invalid">
@@ -166,6 +167,7 @@ const FirstPartyValidation = ({ goToStep }) => {
               value={inputData.email}
               onChange={handleInputChange}
               isInvalid={!!validationErrors.email}
+              autoComplete="off"
             />
             <Form.Control.Feedback type="invalid">
               {validationErrors.email}
@@ -182,6 +184,7 @@ const FirstPartyValidation = ({ goToStep }) => {
               name="title"
               value={inputData.title}
               onChange={handleInputChange}
+              disabled
             />
           </Form.Group>
         </Col>
@@ -192,6 +195,8 @@ const FirstPartyValidation = ({ goToStep }) => {
               name="firstName"
               value={inputData.firstName}
               onChange={handleInputChange}
+                autoComplete="off"
+                disabled
             />
           </Form.Group>
         </Col>
@@ -202,6 +207,8 @@ const FirstPartyValidation = ({ goToStep }) => {
               name="lastName"
               value={inputData.lastName}
               onChange={handleInputChange}
+                autoComplete="off"
+                disabled
             />
           </Form.Group>
         </Col>
@@ -213,6 +220,7 @@ const FirstPartyValidation = ({ goToStep }) => {
               value={inputData.age}
               onChange={handleInputChange}
               isInvalid={!!validationErrors.age}
+                autoComplete="off"
             />
             <Form.Control.Feedback type="invalid">
               {validationErrors.age}
@@ -227,6 +235,7 @@ const FirstPartyValidation = ({ goToStep }) => {
               value={inputData.fatherName}
               onChange={handleInputChange}
               isInvalid={!!validationErrors.fatherName}
+                autoComplete="off"
             />
             <Form.Control.Feedback type="invalid">
               {validationErrors.fatherName}
@@ -241,6 +250,7 @@ const FirstPartyValidation = ({ goToStep }) => {
               value={inputData.address}
               onChange={handleInputChange}
               isInvalid={!!validationErrors.address}
+                autoComplete="off"
             />
             <Form.Control.Feedback type="invalid">
               {validationErrors.address}

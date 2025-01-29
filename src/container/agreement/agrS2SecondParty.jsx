@@ -367,7 +367,8 @@ const SecondPartyValidation = ({ goToStep }) => {
 
   return (
     <div>
-      <h4 className="fw-bolder text-dark">Second Party</h4>
+        <h3 className="fw-bolder  text-secondary-emphasis">Second Party Details {"(Tenant)"} </h3>
+
       {showTenantList ? (
         <>
           <Row>

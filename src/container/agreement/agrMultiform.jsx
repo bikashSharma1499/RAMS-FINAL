@@ -50,7 +50,7 @@ const MultistepForm = () => {
   return (
     <Fragment>
       <Card>
-        <Card.Header>
+        <Card.Header style={{padding:"20px 10px",background:"#fefefe",borderBottom:"none"}} >
           <div className="progress-container">
             {/* Step Number Indicators */}
             <div className="step-indicator-container">

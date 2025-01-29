@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Row, Col, Form, Accordion, Button, Image } from "react-bootstrap";
 import axios from "axios";
 import download from "downloadjs"; // Import Download.js
@@ -10,15 +10,21 @@ const ComponentKYC = ({ onUpdate }) => {
   const [kycImg, setKycImg] = useState(null); // File object
   const [preview, setPreview] = useState(null); // File preview
   const [filePath, setFilePath] = useState("");
-  const [errors, setErrors] = useState({}); // Validation errors
+  const [errors, setErrors] = useState({});
+  const [imageUrl, setImageUrl] = useState(null);
 
   // Handle file selection
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      setKycImg(file);
-      setPreview(URL.createObjectURL(file)); // Generate a preview
-      setErrors((prev) => ({ ...prev, kycImg: null })); // Clear file error
+      const validTypes = ["image/jpeg", "image/png", "image/jpg", "image/tiff"]; // Add other valid types here
+      if (validTypes.includes(file.type)) {
+        setKycImg(file);
+        setPreview(URL.createObjectURL(file)); // Generate a preview
+        setErrors((prev) => ({ ...prev, kycImg: null })); // Clear file error
+      } else {
+        setErrors((prev) => ({ ...prev, kycImg: "Invalid file type. Please upload an image." }));
+      }
     }
   };
 
@@ -30,31 +36,32 @@ const ComponentKYC = ({ onUpdate }) => {
   };
 
   const handleClick = async () => {
-    debugger;
     const newErrors = {};
 
-    // Validations
     if (!kycNo) {
       newErrors.kycNo = "ID Number is required.";
     }
     if (!kycImg && !preview) {
       newErrors.kycImg = "Please choose a file to upload.";
     }
-
+  
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
       return;
     }
-
-    // Determine file extension
+  
     let fileExtension = "";
+    let fileToUpload = null;
+  
     if (kycImg) {
-      fileExtension = kycImg.name.split(".").pop(); // Extension from selected file
+      fileExtension = kycImg.name.split(".").pop();
+      fileToUpload = kycImg;
     } else if (preview) {
-      const previewExtension = preview.split(".").pop(); // Extension from preview
+      const previewExtension = preview.split(".").pop();
       fileExtension = previewExtension;
     }
-
+    console.log(fileExtension);
+  
     try {
       const vrfCandidate = JSON.parse(localStorage.getItem('vrfCandidate'));
       const response = await axios.post(API_ENDPOINTS.serviceKYC, {
@@ -66,35 +73,64 @@ const ComponentKYC = ({ onUpdate }) => {
         emailID: vrfCandidate.emailID,
         kycName: ttype,
         kycNumber: kycNo,
-        kycImage: ".",fileExtension,
+        kycImage: "." + fileExtension,
       });
       console.log(response);
-      const uploadedFilePath = response.data.result.split(","); // API returns the file path
+  
+      const uploadedFilePath = response.data.result.split(",");
       setFilePath(uploadedFilePath[4]);
-
-      // Manually save the file to the target folder (using Download.js)
-      if (kycImg) {
-        const fileBlob = new Blob([kycImg], { type: "image/" + fileExtension }); // You can adjust the type here
-        download(fileBlob, uploadedFilePath[4]); // Save file with path from API response
-      }
-
-      // Notify parent component via onUpdate
-      // onUpdate({
-      //   ttype,
-      //   kycNo,
-      //   kycImg: uploadedFilePath,
-      // });
-
-      setErrors({}); // Clear errors on successful submission
-      alert("File processed successfully!");
+  
     } catch (error) {
-      console.error("Error:", error);
+      console.error('Error uploading image:', error);
     }
   };
-
+  
+  
+  useEffect(() => {
+    if (filePath) { 
+      if (kycImg) {
+        fileUpload(kycImg);
+      }
+    }
+  }, [filePath]);
+  
+  const fileUpload = async (file) => {
+    try {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      
+      reader.onloadend = async () => {
+        const base64Image = reader.result.split(',')[1]; 
+  
+        let expandedPath = filePath.replace('~/', ''); 
+        const dirPath = expandedPath.substring(0, expandedPath.lastIndexOf('/'));
+        const filename = expandedPath.substring(expandedPath.lastIndexOf('/') + 1);
+  
+        const payload = {
+          file: base64Image, 
+          folderPath: dirPath,
+          fileName: filename,
+        };
+  
+        console.log('Sending payload:', payload);
+  
+        const uploadResponse = await axios.post('https://api.redcheckes.com/proxy/file-upload', payload, {
+          headers: { 'Content-Type': 'application/json' },
+        });
+  
+        setImageUrl(uploadResponse.data.imageUrl);
+        alert('Image uploaded successfully!');
+      };
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      alert('Failed to upload image.');
+    }
+  };
+  
+  
   return (
     <div>
-      <Accordion defaultActiveKey={["0"]} alwaysOpen>
+      <Accordion defaultActiveKey="0" alwaysOpen>
         <Accordion.Item eventKey="0">
           <Accordion.Header>Upload KYC Data</Accordion.Header>
           <Accordion.Body>
@@ -163,18 +199,19 @@ const ComponentKYC = ({ onUpdate }) => {
             )}
             <Row className="mt-3">
               <Col>
-                <Button variant="primary"  onClick={handleClick}>
+                <Button variant="primary" onClick={handleClick}>
                   Submit
                 </Button>
               </Col>
             </Row>
-       
+
           </Accordion.Body>
         </Accordion.Item>
       </Accordion>
       {filePath && (
         <div className="mt-3">
-          <strong>File Path:</strong> {filePath}
+          <strong>File Path:</strong> {filePath}<br></br>
+          <strong>Image Url:</strong> {imageUrl}
         </div>
       )}
     </div>

@@ -290,7 +290,7 @@ function PropertyBasicDetails({ goToStep }) {
         CustomerCode: user?.userKey || "",
         HouseCode: selectedHousingCode || "0",
         PropertyName:
-          addressDetails?.i_property_name || "Default Property Name",
+        addressDetails?.i_property_name || "Default Property Name",
         mainaddress: addressDetails?.i_main_address || "Default Main Address",
         address: addressDetails?.i_address || "Default Address",
         location: addressDetails?.i_location || "Default Location",

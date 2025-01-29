@@ -44,7 +44,7 @@ function NewAgreement() {
     try {
       const deviceId = (await deviceInfo()).ip; // Ensure deviceInfo is working correctly
       const response = await axios.post(API_ENDPOINTS.otpAuthentication, {
-        transactionType: "Auth",
+        transactionType: "Login",
         customerType: user.userType, // Replace with the correct value
         userMobileNo: user.userType === "Landlord" ? user.userMobile : mobileNo,
         diviceId: deviceId,
