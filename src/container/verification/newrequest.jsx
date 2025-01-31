@@ -141,7 +141,7 @@ const VerificationForm = () => {
   const renderFormComponent = (component) => {
     switch (component.component_code) {
       case 1:
-        return <ComponentKYC key={component.component_code} />;
+        return <ComponentKYC   key={component.component_code} />;
       case 2:
         return <ComponentReference key={component.component_code} />;
       case 3:
@@ -573,6 +573,7 @@ const VerificationForm = () => {
                             onChange={handleChange}
                             placeholder="Enter candidate name"
                             isInvalid={!!errors.cndName}
+                            disabled={basicDetailsFilled}
                           />
                           <Form.Control.Feedback type="invalid">
                             {errors.cndName}
@@ -587,6 +588,7 @@ const VerificationForm = () => {
                             value={candidateDetails.cndMobile}
                             autoComplete="off"
                             maxLength={10}
+                            disabled={basicDetailsFilled}
                             onChange={handleChange}
                             onInput={(e) => {
                               // Restrict non-numeric input
@@ -613,6 +615,7 @@ const VerificationForm = () => {
                             value={candidateDetails.cndMail}
                             autoComplete="off"
                             maxLength={200}
+                            disabled={basicDetailsFilled}
                             onChange={handleChange}
                             placeholder="Enter email"
                             isInvalid={!!errors.cndMail}
@@ -664,7 +667,7 @@ const VerificationForm = () => {
                 {basicDetailsFilled && !paymentPage  ? (
                   <>
                     <Row>
-                      <Col lg={12}>
+                      <Col lg={8}>
                         <Card className="shadow border-0">
                           <Card.Body>
                             {components.map((comp) => (
@@ -703,7 +706,33 @@ const VerificationForm = () => {
                           </Card.Body>
                         </Card>
                       </Col>
-                      <Col lg={2} >
+                      <Col lg={4} >
+
+                      <Card className="shadow border-0">
+                    <Card.Header className="bg-dark text-white text-center fw-bold">
+                      Your Billing
+                    </Card.Header>
+                    <Card.Body>
+                      <div className="d-flex justify-content-between mb-3">
+                        <span className="text-secondary">
+                          Gross ({componentCount} Components)
+                        </span>
+                        <span className="fw-bold">₹ {totalGross}</span>
+                      </div>
+                      <div className="d-flex justify-content-between d-none mb-3">
+                        <span className="text-secondary">GST (18%)</span>
+                        <span className="fw-bold">₹ {totalGstAmt}</span>
+                      </div>
+                      <hr />
+                      <div className="d-flex d-none justify-content-between mb-3">
+                        <span className="fw-bold">Total</span>
+                        <span className="fw-bold text-success">
+                          ₹ {totalAmount}
+                        </span>
+                      </div>
+                   
+                    </Card.Body>
+                  </Card>
                       <button 
                         onClick={handlePayment}
                         className="btn-save w-100 fw-bold mt-3"
@@ -768,31 +797,7 @@ const VerificationForm = () => {
             <Col lg={4} md={8} sm={12}>
               <Card className="shadow border-0">
                 <Card.Body>
-                  <Card className="shadow border-0">
-                    <Card.Header className="bg-dark text-white text-center fw-bold">
-                      Your Billing
-                    </Card.Header>
-                    <Card.Body>
-                      <div className="d-flex justify-content-between mb-3">
-                        <span className="text-secondary">
-                          Gross ({componentCount} Components)
-                        </span>
-                        <span className="fw-bold">₹ {totalGross}</span>
-                      </div>
-                      <div className="d-flex justify-content-between mb-3">
-                        <span className="text-secondary">GST (18%)</span>
-                        <span className="fw-bold">₹ {totalGstAmt}</span>
-                      </div>
-                      <hr />
-                      <div className="d-flex justify-content-between mb-3">
-                        <span className="fw-bold">Total</span>
-                        <span className="fw-bold text-success">
-                          ₹ {totalAmount}
-                        </span>
-                      </div>
-                   
-                    </Card.Body>
-                  </Card>
+                
 
                   {/* Header Section */}
                   <h5 className="text-center mb-4">
