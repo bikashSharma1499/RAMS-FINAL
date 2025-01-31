@@ -3,8 +3,11 @@ import { Row, Col, Form, Accordion, Button, Image } from "react-bootstrap";
 import axios from "axios";
 import download from "downloadjs"; // Import Download.js
 import { API_ENDPOINTS } from "../../utils/apiConfig";
+import { FaRecycle } from "react-icons/fa";
+import DataTable from "react-data-table-component";
+import { showPopup } from "../../utils/validation";
 
-const ComponentKYC = ({ onUpdate }) => {
+const ComponentKYC = ({ GetTotalPricing }) => {
   const [ttype, setTtype] = useState("");
   const [kycNo, setKycNo] = useState("");
   const [kycImg, setKycImg] = useState(null); // File object
@@ -12,7 +15,10 @@ const ComponentKYC = ({ onUpdate }) => {
   const [filePath, setFilePath] = useState("");
   const [errors, setErrors] = useState({});
   const [imageUrl, setImageUrl] = useState(null);
-
+  const [data, setData] = useState([]);
+  const [pageSize, setPageSize] = useState(10); // Page size control
+  const [fetch, setFetch] = useState(0);
+  //#region HandleFile 
   // Handle file selection
   const handleFileChange = (e) => {
     const file = e.target.files[0];
@@ -44,15 +50,15 @@ const ComponentKYC = ({ onUpdate }) => {
     if (!kycImg && !preview) {
       newErrors.kycImg = "Please choose a file to upload.";
     }
-  
+
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
       return;
     }
-  
+
     let fileExtension = "";
     let fileToUpload = null;
-  
+
     if (kycImg) {
       fileExtension = kycImg.name.split(".").pop();
       fileToUpload = kycImg;
@@ -61,7 +67,7 @@ const ComponentKYC = ({ onUpdate }) => {
       fileExtension = previewExtension;
     }
     console.log(fileExtension);
-  
+
     try {
       const vrfCandidate = JSON.parse(localStorage.getItem('vrfCandidate'));
       const response = await axios.post(API_ENDPOINTS.serviceKYC, {
@@ -76,16 +82,17 @@ const ComponentKYC = ({ onUpdate }) => {
         kycImage: "." + fileExtension,
       });
       console.log(response);
-  
+
       const uploadedFilePath = response.data.result.split(",");
       setFilePath(uploadedFilePath[4]);
-  
+      setFetch(fetch + 1);
+      GetTotalPricing();
     } catch (error) {
       console.error('Error uploading image:', error);
     }
   };
-  
-  
+
+
   useEffect(() => {
     if (filePath) { 
       if (kycImg) {
@@ -93,31 +100,31 @@ const ComponentKYC = ({ onUpdate }) => {
       }
     }
   }, [filePath]);
-  
+
   const fileUpload = async (file) => {
     try {
       const reader = new FileReader();
       reader.readAsDataURL(file);
-      
+
       reader.onloadend = async () => {
-        const base64Image = reader.result.split(',')[1]; 
-  
-        let expandedPath = filePath.replace('~/', ''); 
+        const base64Image = reader.result.split(',')[1];
+
+        let expandedPath = filePath.replace('~/', '');
         const dirPath = expandedPath.substring(0, expandedPath.lastIndexOf('/'));
         const filename = expandedPath.substring(expandedPath.lastIndexOf('/') + 1);
-  
+
         const payload = {
-          file: base64Image, 
+          file: base64Image,
           folderPath: dirPath,
           fileName: filename,
         };
-  
+
         console.log('Sending payload:', payload);
-  
+
         const uploadResponse = await axios.post('https://api.redcheckes.com/proxy/file-upload', payload, {
           headers: { 'Content-Type': 'application/json' },
         });
-  
+
         setImageUrl(uploadResponse.data.imageUrl);
         alert('Image uploaded successfully!');
       };
@@ -126,8 +133,81 @@ const ComponentKYC = ({ onUpdate }) => {
       alert('Failed to upload image.');
     }
   };
-  
-  
+  //#endregion
+
+
+  //#region  handleGrid
+
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await axios.post(API_ENDPOINTS.verificationComponentCaseList, {
+          verificationCode: localStorage.getItem("vrfCode"),
+          componentCode: 1,
+        });
+        setData(response.data);
+      } catch (err) {
+        console.log(err);
+      }
+    };
+
+    fetchData();
+  }, [fetch]);
+
+
+  const columns = [
+    { name: "ID", selector: (row) => row.component_case_id, sortable: true },
+    { name: "KYC Name", selector: (row) => row.kyc_id_name },
+    { name: "KYC ID No", selector: (row) => row.kyc_id_no },
+    {
+      name: "Image",
+      cell: (row) => (
+        <img
+          src={row.case_image_url}
+          alt="KYC"
+          style={{ width: "50px", height: "50px", objectFit: "cover", borderRadius: "5px" }}
+        />
+      ),
+      ignoreRowClick: true,
+      allowOverflow: true,
+      button: true,
+    },
+    {
+      name: "Remove",
+      cell: (row) => (
+        <button
+          onClick={() => handleRemove(row.component_case_code)}
+          className="btn btn-danger rounded-2 btn-sm"
+          title="Remove"
+        >
+          <FaRecycle />
+        </button>
+      ),
+      ignoreRowClick: true,
+      allowOverflow: true,
+      button: true,
+    },
+  ];
+  const handleRemove = async (kycCode) => {
+    const response = await axios.post(API_ENDPOINTS.serviceKYC, {
+      transactionType: "D",
+      kycCode: kycCode,
+      verificationCode: localStorage.getItem("vrfCode"),
+      candidateName: "vrfCandidate.candidateName",
+      mobileNumber: "vrfCandidate.mobileNumber",
+      emailID: "vrfCandidate.emailID",
+      kycName: "ttype",
+      kycNumber: "kycNo",
+      kycImage: "",
+    });
+    console.log(response);
+    setFetch(fetch + 1);
+    GetTotalPricing();
+    showPopup({ title: "KYC Removed Successfully", msg: "", iconType: "success" });
+  }
+
+  //#endregion
   return (
     <div>
       <Accordion defaultActiveKey="0" alwaysOpen>
@@ -202,6 +282,26 @@ const ComponentKYC = ({ onUpdate }) => {
                 <Button variant="primary" onClick={handleClick}>
                   Submit
                 </Button>
+              </Col>
+            </Row>
+            <Row className="mt-3">
+              <Col>
+                <DataTable
+                  columns={columns}
+                  title="KYC Uploaded List"
+                  data={data}
+                  pagination
+                  paginationPerPage={pageSize}
+                  onChangeRowsPerPage={(newPerPage) => setPageSize(newPerPage)}
+                  highlightOnHover
+                  responsive
+                  fixedHeader
+                  striped
+                  dense
+                  pointerOnHover
+                  noDataComponent="No KYC Found for you"
+                  subHeader
+                />
               </Col>
             </Row>
 

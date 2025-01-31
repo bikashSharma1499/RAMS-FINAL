@@ -45,6 +45,10 @@ export const API_ENDPOINTS = {
   serviceCrimialList:BASE_URL+"Service/VerificationCriminalDisplay",
   verificationList:BASE_URL+"Service/VerificationList",
   verificationDelete:BASE_URL+"Service/VerificationDelete",
+  verificationTotalPrice: BASE_URL+"Service/VerificationPricingTotal",
+
+  verificationComponentCaseList: BASE_URL+"Service/VerificationComponentCaseList",
+
 
   CustomerNewRegistration:BASE_URL+"User/CustomerRegistration",
   Customerdata:BASE_URL+"User/CustomerSelfList",

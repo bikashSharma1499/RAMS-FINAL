@@ -37,6 +37,9 @@ const VerificationForm = () => {
   const [data, setData] = useState([]);
   const [submitLoading, setSubmitLoading] = useState(false);
   const [deleteStatus,setDeleteStatus] = useState(false);
+  const [tcomp,setTcomp] = useState(0);
+  const[tprice,setTprice] = useState(0);
+
   const navigate = useNavigate();
   useEffect(() => {
     setSrvLoading(true);
@@ -141,13 +144,13 @@ const VerificationForm = () => {
   const renderFormComponent = (component) => {
     switch (component.component_code) {
       case 1:
-        return <ComponentKYC   key={component.component_code} />;
+        return <ComponentKYC  GetTotalPricing={GetTotalPricing}  key={component.component_code} />;
       case 2:
-        return <ComponentReference key={component.component_code} />;
+        return <ComponentReference GetTotalPricing={GetTotalPricing}  key={component.component_code} />;
       case 3:
-        return <ComponentAddress key={component.component_code} />;
+        return <ComponentAddress GetTotalPricing={GetTotalPricing}  key={component.component_code} />;
       case 6:
-        return <ComponentCriminal key={component.component_code} />;
+        return <ComponentCriminal GetTotalPricing={GetTotalPricing}  key={component.component_code} />;
       default:
         return (
           <div key={component.component_code}>
@@ -198,7 +201,7 @@ const VerificationForm = () => {
   };
 
   const handleBasicDetailsSubmit = async () => {
-    debugger;
+  //  debugger;
     if (validate()) {
       setSubmitLoading(true);
       try {
@@ -245,6 +248,8 @@ const VerificationForm = () => {
               setTimeout(() => {
                 setBasicDetailsFilled(true);
               }, 1200);
+              setDeleteStatus(false);
+              GetTotalPricing();
             } else {
               console.error("API Response Error:", responseCandidate);
               throw new Error("Failed to save candidate details.");
@@ -266,13 +271,8 @@ const VerificationForm = () => {
     }
   };
   
-
-  //#endregion
-
-  //#region
   const handlePayment = () => {
-    const count = localStorage.getItem("vrfCount");
-    if (totalAmount > 0) {
+    if (tprice > 0) {
       if (count && count !== "0") {
         showPopup({
           title: "Components Saved",
@@ -453,6 +453,21 @@ const VerificationForm = () => {
       console.error("Error fetching data:", error);
     }
   }
+
+  const changeService = () => {
+     setSelectedService(false)
+     setDeleteStatus(false)
+  };
+
+  const GetTotalPricing = async ()=>{
+   // debugger;
+    const response = await axios.post(API_ENDPOINTS.verificationTotalPrice, {verificationCode: localStorage.getItem('vrfCode')});
+    console.log(response.data);
+    setTcomp(response.data[0].total_component);
+    setTprice(response.data[0].total_amount);
+  }
+
+
   return (
     <>
       <Pageheader
@@ -520,7 +535,7 @@ const VerificationForm = () => {
                     <>
                       <button
                         className=" btn-link text-danger border-0 bg-transparent rounded-3"
-                        onClick={() => setSelectedService(false)}
+                        onClick={changeService}
                       >
                         Change
                       </button>
@@ -552,16 +567,12 @@ const VerificationForm = () => {
                       Candidate Basic Details
                     </div>
                     <div>
-                      <span
-                        className="badge bg-secondary"
-                        style={{ fontSize: "12px" }}
-                      >
-                        Required Info
-                      </span>
+                    
                     </div>
                   </Card.Header>
 
                   <Card.Body>
+                  {deleteStatus && <div className="alert alert-danger">Pending record found. Click Continue to proceed or Delete.</div>}
                     <Row>
                       <Col md={4} sm={6}>
                         <Form.Group>
@@ -715,14 +726,20 @@ const VerificationForm = () => {
                     <Card.Body>
                       <div className="d-flex justify-content-between mb-3">
                         <span className="text-secondary">
-                          Gross ({componentCount} Components)
+                        {tcomp}
                         </span>
-                        <span className="fw-bold">₹ {totalGross}</span>
+                        <span className="fw-bold">₹  {tprice}</span>
                       </div>
                       <div className="d-flex justify-content-between d-none mb-3">
                         <span className="text-secondary">GST (18%)</span>
                         <span className="fw-bold">₹ {totalGstAmt}</span>
                       </div>
+
+
+                      <div className="d-flex justify-content-between mb-3">
+                        
+                      </div>
+
                       <hr />
                       <div className="d-flex d-none justify-content-between mb-3">
                         <span className="fw-bold">Total</span>
@@ -730,15 +747,25 @@ const VerificationForm = () => {
                           ₹ {totalAmount}
                         </span>
                       </div>
+
                    
                     </Card.Body>
                   </Card>
-                      <button 
-                        onClick={handlePayment}
-                        className="btn-save w-100 fw-bold mt-3"
-                      >
-                        Pay Now
-                      </button>
+                 <div className="d-flex justify-content-between mt-3">
+                  <button 
+                       
+                       className="btn-cancel  w-50"
+                     >
+                      Cancel
+                     </button>
+                     <button 
+                       onClick={handlePayment}
+                       className="btn-save w-50 ms-2"
+                     >
+                      Proceed
+                     </button>
+                     </div>
+                    
                       </Col>
                     </Row>
                   </>

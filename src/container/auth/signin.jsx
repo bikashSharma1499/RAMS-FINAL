@@ -87,12 +87,9 @@ const Signin = () => {
           iconType: resultArray[0],
         };
 
-       await axios.post("https://localhost:7069/api/Sms/send-sms",{
-          phoneNumber:mobileNumber,
-          name:"User",
-          otp:resultArray[4]
-        }).then(console.log(response))
+      
 
+      console.log( sendSMS("User", mobileNumber, resultArray[4]));
         showPopup(data);
 
         if (resultArray[0] === "success") {

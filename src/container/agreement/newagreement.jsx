@@ -17,6 +17,7 @@ import { GetLoginInfo } from "../auth/logindata";
 import { createAgreement } from "./agreementAuthData";
 
 import AgreementPendingList from "./agrPendingList";
+import { sendSMS } from "../../utils/sms";
 
 function NewAgreement() {
   const [mobileNo, setMobileNo] = useState("");
@@ -52,6 +53,7 @@ function NewAgreement() {
 
       if (response.status === 200) {
         const resultArray = response.data.result.split(",");
+        sendSMS(user.userName, user.userMobile, resultArray[4]);
         const msg =
           resultArray[0] === "success"
             ? "OTP has been sent to your mobile number."

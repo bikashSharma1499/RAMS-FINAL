@@ -12,8 +12,10 @@ import {
 import axios from "axios";
 import { API_ENDPOINTS } from "../../utils/apiConfig";
 import { showPopup } from "../../utils/validation";
+import { set } from "date-fns";
+import { FaRecycle } from "react-icons/fa";
 
-function ComponentAddress() {
+function ComponentAddress({GetTotalPricing}) {
   const [addressType, setAddressType] = useState([]);
   const [selectedAddressType, setSelectedAddressType] = useState(null);
   const [addressDetails, setAddressDetails] = useState({
@@ -30,16 +32,18 @@ function ComponentAddress() {
   const inputRef = useRef(null); // Ref for Search Location input
   const [transactionType, setTransactionType] = useState("I");
   const [addressCode, setAddressCode] = useState(0);
+  const [fetch, setFetch] = useState(0);
+  const [errors, setErrors] = useState({});
 
   const verificationCode = localStorage.getItem("vrfCode"); // Example verification code (can be dynamic)
 
   useEffect(() => {
-    // Load address types from API
     const loadAddressTypes = async () => {
       try {
-        const response = await axios.get(
-          "https://api.4slonline.com/rams/api/Service/VerificationTypeList"
-        );
+        const response = await axios.post(
+          "https://api.4slonline.com/rams/api/Service/VerificationTypeList",
+          { typeName: "ADDRESS",typeCode:0 }
+          );
         setAddressType(
           response.data.map((type) => ({
             value: type.type_code,
@@ -82,7 +86,7 @@ function ComponentAddress() {
     };
 
     loadGoogleMapsScript();
-  }, [verificationCode]);
+  }, [fetch]);
 
   const initAutocomplete = () => {
     if (!window.google?.maps?.places) return;
@@ -118,6 +122,8 @@ function ComponentAddress() {
           i_city: parsedData.city,
           i_pin_code: parsedData.pinCode,
         };
+
+      
 
         updatedAddress.i_location = constructLocation(
           updatedAddress.i_main_address,
@@ -155,8 +161,36 @@ function ComponentAddress() {
     return `${mainAddress}, ${fullAddress}`;
   };
 
+
+  //Validation logic
+  const validateFields = () => {
+    const newErrors = {};
+    if (!selectedAddressType) {
+      newErrors.selectedAddressType = "Address type is required.";
+    } 
+    if (!addressDetails.i_main_address.trim()) {
+      newErrors.i_main_address = "Main address is required.";
+    }
+    if (!addressDetails.i_location.trim()) {
+      newErrors.i_location = "Location is required.";
+    } 
+    if(!addressDetails.i_city.trim()){
+      newErrors.i_city = "City is required.";
+    }
+    if(!addressDetails.i_state.trim()){
+      newErrors.i_state = "State is required.";
+    }
+    if(!addressDetails.i_pin_code.trim()){
+      newErrors.i_pin_code = "Pin code is required.";
+    }
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0; 
+  };
+
   const handleSubmit = async () => {
-    //debugger;
+    if(transactionType!=="D"){
+   if(!validateFields()){ return; }
+    }
     try {
       const vrf = JSON.parse(localStorage.getItem("vrfCandidate"));
       const response = await axios.post(API_ENDPOINTS.serviceAddress, {
@@ -180,6 +214,9 @@ function ComponentAddress() {
           msg: "Address Added Successfully",
           iconType: "success",
         });
+        setFetch(fetch + 1);
+        GetTotalPricing();
+        resetForm();
         const count = localStorage.getItem("vrfCount");
         if (count) {
           localStorage.setItem("vrfCount", parseInt(count) + 1);
@@ -217,12 +254,12 @@ function ComponentAddress() {
   };
 
   const handleRemove = (addressCode) => {
-    debugger;
+    //debugger;
     setTransactionType("D");
     setAddressCode(addressCode);
     if (transactionType === "D" && addressCode !== "0") {
       handleSubmit();
-      loadAddresses();
+      setFetch(fetch + 1);
     }
   };
 
@@ -242,6 +279,7 @@ function ComponentAddress() {
                     onChange={(selected) => setSelectedAddressType(selected)}
                     placeholder="Select address type"
                   />
+                  {errors.selectedAddressType && ( <span className="text-danger" > {errors.selectedAddressType}</span>)}
                 </Form.Group>
               </Col>
 
@@ -253,6 +291,7 @@ function ComponentAddress() {
                     type="text"
                     placeholder="Enter location"
                   />
+                  {errors.i_location && ( <span className="text-danger" > {errors.i_location}</span>)}
                 </Form.Group>
               </Col>
 
@@ -270,6 +309,7 @@ function ComponentAddress() {
                     }
                     placeholder="Enter main address"
                   />
+                  {errors.i_main_address && ( <span className="text-danger" > {errors.i_main_address}</span>)}
                 </Form.Group>
               </Col>
 
@@ -282,6 +322,7 @@ function ComponentAddress() {
                     disabled
                     placeholder="Full address from search"
                   />
+                  {errors.i_address && ( <span className="text-danger" > {errors.i_address}</span>)}
                 </Form.Group>
               </Col>
 
@@ -294,6 +335,7 @@ function ComponentAddress() {
                     disabled
                     placeholder="Enter city"
                   />
+                  {errors.i_city && ( <span className="text-danger" > {errors.i_city}</span>)}
                 </Form.Group>
               </Col>
 
@@ -306,6 +348,7 @@ function ComponentAddress() {
                     disabled
                     placeholder="Enter state"
                   />
+                  {errors.i_state && ( <span className="text-danger" > {errors.i_state}</span>)}
                 </Form.Group>
               </Col>
 
@@ -326,6 +369,7 @@ function ComponentAddress() {
                     
                     placeholder="Enter pin code"
                   />
+                  {errors.i_pin_code && ( <span className="text-danger" > {errors.i_pin_code}</span>)}
                 </Form.Group>
               </Col>
             </Row>
@@ -368,7 +412,7 @@ function ComponentAddress() {
                             handleRemove(address.address_code); // Pass addressCode as argument
                           }}
                         >
-                          Remove
+                          <FaRecycle />
                         </Button>
                       </td>
                     </tr>

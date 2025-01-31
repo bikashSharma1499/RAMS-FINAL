@@ -3,8 +3,9 @@ import React, { useState,useEffect  } from "react";
 import { Row, Col, Form, Accordion, Button } from "react-bootstrap";
 import { API_ENDPOINTS } from "../../utils/apiConfig";
 import { showPopup } from "../../utils/validation";
-
-const ComponentReference = ({ onUpdate }) => {
+import { FaRecycle } from "react-icons/fa";
+import DataTable from "react-data-table-component";
+const ComponentReference = ({ GetTotalPricing} ) => {
 
     const [transactionType, setTransactionType] = useState("I");
     const [referCode, setReferCode] = useState(0);
@@ -12,45 +13,71 @@ const ComponentReference = ({ onUpdate }) => {
   const [referMob, setReferMob] = useState("");
   const [referMail, setReferMail] = useState("");
   const [errors, setErrors] = useState({});
-
+ const [data, setData] = useState([]);
+  const [pageSize, setPageSize] = useState(5); // Page size control
+  const [fetch, setFetch] = useState(0);
   // Regex patterns
   const mobileRegex = /^[6-9]\d{9}$/; // Indian mobile number validation
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
   //#region 
-   useEffect(() => {
+   
+  useEffect(() => {
     const fetchData = async () => {
-      const code = localStorage.getItem("vrfCode");
-      console.log("Verification Code:", code);
-  
-      if (code) {
-        try {
-          const response = await axios.post(API_ENDPOINTS.serviceReferenceList, {
-            verificationCode: code,
-          });
-  
-          console.log("API Response:", response.data);
-  
-          const data = response.data[0];
-          if (data && data.address_code) {
-            setTransactionType("U");
-            setReferCode(data.address_code);
-            setReferName(data.refer_person);
-            setReferMail(data.refer_mail);
-            setReferMob(data.refer_mobile)
-     
-           } else {
-            console.warn("No valid data returned from the API");
-          }
-        } catch (error) {
-          console.error("Error fetching data:", error.response || error.message);
-        }
-      }
+      try {
+        const response = await axios.post(API_ENDPOINTS.verificationComponentCaseList, {
+          verificationCode: localStorage.getItem("vrfCode"),
+          componentCode:2,
+        });
+        setData(response.data);
+      } catch (err) {
+        console.log(err);
+      } 
     };
-  
+
     fetchData();
-  }, []);
-  
+  }, [fetch]);
+
+
+  const columns = [
+    { name: "ID", selector: (row) => row.component_case_id, sortable: true },
+    { name: "Name", selector: (row) => row.reference_person_name },
+    { name: "Mobile No", selector: (row) => row.reference_person_mobile },
+    { name: "Email", selector: (row) => row.reference_person_email },
+    {
+      name: "Remove",
+      cell: (row) => (
+        <button
+          onClick={() => handleRemove(row.component_case_code)}
+          className="btn btn-danger rounded-2 btn-sm"
+          title="Remove"
+        >
+          <FaRecycle />
+        </button>
+      ),
+      ignoreRowClick: true,
+      allowOverflow: true,
+      button: true,
+    },
+  ];
+  const handleRemove = async (refCode)=>{
+    const response = await axios.post(API_ENDPOINTS.serviceReference, {
+      transactionType:"D",
+      referalCode:refCode,
+      verificationCode:localStorage.getItem('vrfCode'),
+      candidateName:"vrfData.candidateName",
+      mobileNumber:"vrfData.mobileNumber",
+      emailID:"vrfData.emailID",
+      referalName:"referName",
+      referalMobile:"referMob",
+      referalMail:"referMail",
+    });
+    console.log(response);
+    setFetch(fetch + 1);
+    GetTotalPricing();
+    showPopup({title: "Refernce Removed Successfully",msg:"", iconType: "success"});
+  }
+
 
   //#endregion
 
@@ -128,6 +155,11 @@ const ComponentReference = ({ onUpdate }) => {
           }else{
             localStorage.setItem('vrfCount',1);
           }
+          setFetch(fetch + 1);
+        GetTotalPricing();
+        setReferMail("");
+        setReferMob("");
+        setReferMail("");
         } else {
           showPopup({
             title: "Unexpected Response",
@@ -224,6 +256,27 @@ const ComponentReference = ({ onUpdate }) => {
                   ("Update"):("Submit")
                   }
                 </Button>
+              </Col>
+            </Row>
+
+            <Row className="mt-3">
+              <Col>
+              <DataTable
+  columns={columns}
+  title="Refernce Uploaded List" 
+  data={data}
+  pagination
+  paginationPerPage={pageSize}
+  onChangeRowsPerPage={(newPerPage) => setPageSize(newPerPage)}
+  highlightOnHover
+  responsive
+  fixedHeader
+  striped
+  dense
+  pointerOnHover
+  noDataComponent="No Data Found for you"
+  subHeader
+/>
               </Col>
             </Row>
           </Accordion.Body>

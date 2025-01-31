@@ -3,6 +3,7 @@ import { Card, Row, Col, Button, InputGroup, Form } from "react-bootstrap";
 import Pageheader from "../../components/pageheader/pageheader";
 import PropertyMultistepForm from "./propertymultiform";
 import { GetLoginInfo } from "../auth/logindata";
+import { sendSMS } from "../../utils/sms";
 import {
   deviceInfo,
   MaskInitial,
@@ -180,6 +181,7 @@ function PropertyListing() {
 
     if (response.status === 200) {
       const resultArray = response.data.result.split(",");
+       sendSMS(userData.userName, userData.userMobile, resultArray[4])
       const msg =
         resultArray[0] === "success"
           ? "OTP has been sent to your mobile number."
