@@ -1,43 +1,137 @@
 import axios from "axios";
-import React, { useState,useEffect  } from "react";
+import React, { useState, useEffect } from "react";
 import { Row, Col, Form, Accordion, Button } from "react-bootstrap";
 import { API_ENDPOINTS } from "../../utils/apiConfig";
 import { showPopup } from "../../utils/validation";
 import { FaRecycle } from "react-icons/fa";
 import DataTable from "react-data-table-component";
-const ComponentReference = ({ GetTotalPricing} ) => {
 
-    const [transactionType, setTransactionType] = useState("I");
-    const [referCode, setReferCode] = useState(0);
+const ComponentReference = ({ GetTotalPricing }) => {
+  const [transactionType, setTransactionType] = useState("I");
+  const [referCode, setReferCode] = useState(0);
   const [referName, setReferName] = useState("");
   const [referMob, setReferMob] = useState("");
   const [referMail, setReferMail] = useState("");
   const [errors, setErrors] = useState({});
- const [data, setData] = useState([]);
-  const [pageSize, setPageSize] = useState(5); // Page size control
+  const [data, setData] = useState([]);
+  const [pageSize, setPageSize] = useState(5);
   const [fetch, setFetch] = useState(0);
-  // Regex patterns
-  const mobileRegex = /^[6-9]\d{9}$/; // Indian mobile number validation
+
+  // Mobile and Email Validation Regex
+  const mobileRegex = /^[6-9]\d{9}$/;
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-  //#region 
-   
   useEffect(() => {
     const fetchData = async () => {
       try {
         const response = await axios.post(API_ENDPOINTS.verificationComponentCaseList, {
           verificationCode: localStorage.getItem("vrfCode"),
-          componentCode:2,
+          componentCode: 2,
         });
         setData(response.data);
       } catch (err) {
         console.log(err);
-      } 
+      }
     };
 
     fetchData();
   }, [fetch]);
 
+  const validateField = (name, value) => {
+    setErrors((prevErrors) => {
+      const newErrors = { ...prevErrors };
+
+      if (name === "referName") {
+        newErrors.referName = value.trim() ? "" : "Name is required.";
+      }
+      if (name === "referMob") {
+        if (!value.trim()) {
+          newErrors.referMob = "Mobile number is required.";
+        } else if (!mobileRegex.test(value)) {
+          newErrors.referMob = "Invalid mobile number (Must start with 6-9 and be 10 digits).";
+        } else {
+          newErrors.referMob = "";
+        }
+      }
+      if (name === "referMail") {
+        if (!value.trim()) {
+          newErrors.referMail = "Email is required.";
+        } else if (!emailRegex.test(value)) {
+          newErrors.referMail = "Invalid email address.";
+        } else {
+          newErrors.referMail = "";
+        }
+      }
+
+      return newErrors;
+    });
+  };
+
+  const handleRemove = async (refCode) => {
+    try {
+      await axios.post(API_ENDPOINTS.serviceReference, {
+        transactionType: "D",
+        referalCode: refCode,
+        verificationCode: localStorage.getItem("vrfCode"),
+        candidateName: "vrfData.candidateName",
+      mobileNumber: "vrfData.mobileNumber",
+      emailID: "vrfData.emailID",
+      referalName: "referName",
+      referalMobile: "referMob",
+      referalMail: "referMail",
+      });
+      setFetch(fetch + 1);
+      GetTotalPricing();
+      setReferName("");
+        setReferMob("");
+        setReferMail("");
+      showPopup({ title: "Reference Removed Successfully", msg: "", iconType: "success" });
+    } catch (error) {
+      showPopup({ title: "Error", msg: "Failed to remove reference.", iconType: "error" });
+    }
+  };
+
+  const handleSubmit = async () => {
+    validateField("referName", referName);
+    validateField("referMob", referMob);
+    validateField("referMail", referMail);
+
+    const hasErrors = Object.values(errors).some((err) => err);
+    if (hasErrors || !referName || !referMob || !referMail) return;
+
+    const vrfData = JSON.parse(localStorage.getItem("vrfCandidate"));
+    const payload = {
+      transactionType,
+      referalCode: referCode,
+      verificationCode: localStorage.getItem("vrfCode"),
+      candidateName: vrfData.candidateName,
+      mobileNumber: vrfData.mobileNumber,
+      emailID: vrfData.emailID,
+      referalName: referName,
+      referalMobile: referMob,
+      referalMail: referMail,
+    };
+
+    try {
+      const response = await axios.post(API_ENDPOINTS.serviceReference, payload);
+      if (response.status === 200 && response.data) {
+        showPopup({
+          title: "Success",
+          msg: "Reference added successfully!",
+          iconType: "success",
+        });
+        setFetch(fetch + 1);
+        GetTotalPricing();
+        setReferName("");
+        setReferMob("");
+        setReferMail("");
+      } else {
+        showPopup({ title: "Submission Failed", msg: "Please try again.", iconType: "error" });
+      }
+    } catch (error) {
+      showPopup({ title: "Error", msg: error.message, iconType: "error" });
+    }
+  };
 
   const columns = [
     { name: "ID", selector: (row) => row.component_case_id, sortable: true },
@@ -60,131 +154,6 @@ const ComponentReference = ({ GetTotalPricing} ) => {
       button: true,
     },
   ];
-  const handleRemove = async (refCode)=>{
-    const response = await axios.post(API_ENDPOINTS.serviceReference, {
-      transactionType:"D",
-      referalCode:refCode,
-      verificationCode:localStorage.getItem('vrfCode'),
-      candidateName:"vrfData.candidateName",
-      mobileNumber:"vrfData.mobileNumber",
-      emailID:"vrfData.emailID",
-      referalName:"referName",
-      referalMobile:"referMob",
-      referalMail:"referMail",
-    });
-    console.log(response);
-    setFetch(fetch + 1);
-    GetTotalPricing();
-    showPopup({title: "Refernce Removed Successfully",msg:"", iconType: "success"});
-  }
-
-
-  //#endregion
-
-  //#region Validate and Submisssion
-
-  const validateField = (name, value) => {
-    const newErrors = { ...errors };
-
-    if (name === "referName") {
-      if (!value.trim()) {
-        newErrors.referName = "Name is required.";
-      } else {
-        delete newErrors.referName;
-      }
-    }
-
-    if (name === "referMob") {
-      if (!value.trim()) {
-        newErrors.referMob = "Mobile number is required.";
-      } else if (!mobileRegex.test(value)) {
-        newErrors.referMob = "Invalid mobile number.";
-      } else {
-        delete newErrors.referMob;
-      }
-    }
-
-    if (name === "referMail") {
-      if (!value.trim()) {
-        newErrors.referMail = "Email is required.";
-      } else if (!emailRegex.test(value)) {
-        newErrors.referMail = "Invalid email address.";
-      } else {
-        delete newErrors.referMail;
-      }
-    }
-
-    setErrors(newErrors);
-  };
-
-  const handleSubmit = async () => {
-    if (Object.keys(errors).length > 0 || !referName || !referMob || !referMail) {
-      alert("Please correct the errors before submitting.");
-      return;
-    }
-
-    const vrfData=  JSON.parse(localStorage.getItem('vrfCandidate'));
-    // API Call Logic
-    const payload = {
-      transactionType:transactionType,
-      referalCode:referCode,
-      verificationCode:localStorage.getItem('vrfCode'),
-      candidateName:vrfData.candidateName,
-      mobileNumber:vrfData.mobileNumber,
-      emailID:vrfData.emailID,
-      referalName:referName,
-      referalMobile:referMob,
-      referalMail:referMail,
-    };
-    console.log(payload);
-    try {
-      const response = await axios.post(API_ENDPOINTS.serviceReference, payload);
-      if (response.status === 200 && response.data) {
-        const { result } = response.data;
-        const resultArray = result ? result.split(",") : [];
-        debugger;
-        if (resultArray.length > 4) {
-          showPopup({
-            title: resultArray[1],
-            msg: resultArray[4],
-            iconType: "success",
-          });
-          const count= localStorage.getItem('vrfCount');
-          if(count){
-            localStorage.setItem('vrfCount',parseInt(count)+1);
-          }else{
-            localStorage.setItem('vrfCount',1);
-          }
-          setFetch(fetch + 1);
-        GetTotalPricing();
-        setReferMail("");
-        setReferMob("");
-        setReferMail("");
-        } else {
-          showPopup({
-            title: "Unexpected Response",
-            msg: "The server returned an incomplete response.",
-            iconType: "error",
-          });
-        }
-      } else {
-        showPopup({
-          title: "Submission Failed",
-          msg: "The server returned an error. Please try again.",
-          iconType: "error",
-        });
-      }
-    } catch (error) {
-      console.error("API Error:", error);
-      showPopup({
-        title: "Error",
-        msg: error.message || "An unexpected error occurred.",
-        iconType: "error",
-      });
-    }
-    
-  }
-  //#endregion
 
   return (
     <div>
@@ -204,13 +173,11 @@ const ComponentReference = ({ GetTotalPricing} ) => {
                       validateField("referName", e.target.value);
                     }}
                     placeholder="Enter name"
-                    isInvalid={!!errors.referName}
                   />
-                  <Form.Control.Feedback type="invalid">
-                    {errors.referName}
-                  </Form.Control.Feedback>
+                  {errors.referName && <span className="text-danger">{errors.referName}</span>}
                 </Form.Group>
               </Col>
+
               <Col lg={4} md={6} sm={6}>
                 <Form.Group>
                   <label>Referal Mobile</label>
@@ -223,13 +190,11 @@ const ComponentReference = ({ GetTotalPricing} ) => {
                       validateField("referMob", e.target.value);
                     }}
                     placeholder="Enter mobile number"
-                    isInvalid={!!errors.referMob}
                   />
-                  <Form.Control.Feedback type="invalid">
-                    {errors.referMob}
-                  </Form.Control.Feedback>
+                  {errors.referMob && <span className="text-danger">{errors.referMob}</span>}
                 </Form.Group>
               </Col>
+
               <Col lg={4} md={6} sm={6}>
                 <Form.Group>
                   <label>Refer Mail</label>
@@ -241,44 +206,17 @@ const ComponentReference = ({ GetTotalPricing} ) => {
                       validateField("referMail", e.target.value);
                     }}
                     placeholder="Enter email"
-                    isInvalid={!!errors.referMail}
                   />
-                  <Form.Control.Feedback type="invalid">
-                    {errors.referMail}
-                  </Form.Control.Feedback>
+                  {errors.referMail && <span className="text-danger">{errors.referMail}</span>}
                 </Form.Group>
               </Col>
             </Row>
-            <Row className="mt-3">
-              <Col>
-                <Button variant="primary" onClick={handleSubmit}>
-                { transactionType=='U' ?
-                  ("Update"):("Submit")
-                  }
-                </Button>
-              </Col>
-            </Row>
 
-            <Row className="mt-3">
-              <Col>
-              <DataTable
-  columns={columns}
-  title="Refernce Uploaded List" 
-  data={data}
-  pagination
-  paginationPerPage={pageSize}
-  onChangeRowsPerPage={(newPerPage) => setPageSize(newPerPage)}
-  highlightOnHover
-  responsive
-  fixedHeader
-  striped
-  dense
-  pointerOnHover
-  noDataComponent="No Data Found for you"
-  subHeader
-/>
-              </Col>
-            </Row>
+            <Button variant="primary" className="mt-3" onClick={handleSubmit}>
+              {transactionType === "U" ? "Update" : "Submit"}
+            </Button>
+
+            <DataTable columns={columns} data={data} pagination paginationPerPage={pageSize} />
           </Accordion.Body>
         </Accordion.Item>
       </Accordion>

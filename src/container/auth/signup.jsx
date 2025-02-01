@@ -12,7 +12,7 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { AES } from "crypto-js";
 import { deviceInfo,decryptKeyWithExpiry, encryptKeyWithExpiry, showPopup } from "../../utils/validation";
-
+import { sendSMS } from "../../utils/sms";
 const Signup = () => {
   const [validated, setValidated] = useState(false);
   const [valid, setValid] = useState(false);
@@ -119,6 +119,7 @@ const Signup = () => {
             timer: 1500,
           });
           if (resultArray[0] === "success") {
+            sendSMS(fname,mobile,resultArray[4]);
             localStorage.setItem('regOtp', encryptKeyWithExpiry(resultArray[4],180));
             setTimeout(() => {
               setValidated(true);

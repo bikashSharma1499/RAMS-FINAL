@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Row, Col, Form, Accordion, Button, Image } from "react-bootstrap";
+import { Row, Col, Form, Accordion, Button, Image, Spinner } from "react-bootstrap";
 import axios from "axios";
 import download from "downloadjs"; // Import Download.js
 import { API_ENDPOINTS } from "../../utils/apiConfig";
@@ -20,6 +20,7 @@ const ComponentCriminal = ({ GetTotalPricing }) => {
   const [fetch, setFetch] = useState(0);
   const [transactionType, setTransactionType] = useState("I");
   const[criminalCode,setCriminalCode]=useState(0);
+  const [uploading, setUploading]= useState(false);
   //#region HandleFile 
   // Handle file selection
   const handleFileChange = (e) => {
@@ -70,7 +71,7 @@ const ComponentCriminal = ({ GetTotalPricing }) => {
       fileExtension = previewExtension;
     }
     console.log(fileExtension);
-
+    setUploading(true);
     try {
       const vrfCandidate = JSON.parse(localStorage.getItem('vrfCandidate'));
       const response = await axios.post(API_ENDPOINTS.serviceCriminal, {
@@ -91,18 +92,23 @@ const ComponentCriminal = ({ GetTotalPricing }) => {
     } catch (error) {
       console.error('Error uploading image:', error);
     }
+    setUploading(false);
   };
 
 
   useEffect(() => {
     if (filePath) { 
+  
       if (kycImg) {
+        setUploading(true);
         fileUpload(kycImg);
+        setUploading(false);
       }
     }
   }, [filePath]);
 
   const fileUpload = async (file) => {
+    setUploading(true);
     try {
       const reader = new FileReader();
       reader.readAsDataURL(file);
@@ -127,7 +133,9 @@ const ComponentCriminal = ({ GetTotalPricing }) => {
         });
 
         setImageUrl(uploadResponse.data.imageUrl);
-        alert('Image uploaded successfully!');
+        fetchData();
+        //alert('Image uploaded successfully!');
+        setUploading(false);
       };
     } catch (error) {
       console.error('Error uploading image:', error);
@@ -138,43 +146,41 @@ const ComponentCriminal = ({ GetTotalPricing }) => {
 
 
   //#region  handleGrid
-
+  const fetchData = async () => {
+    try {
+      const response = await axios.post(API_ENDPOINTS.verificationComponentCaseList, {
+        verificationCode: localStorage.getItem("vrfCode"),
+        componentCode: 6,
+      });
+  
+      if (response.data && response.data.length > 0) {
+        const criminalData = response.data[0]; // Get the first record
+  
+        setKycNo(criminalData.candidate_criminal_aadhar || ""); 
+        setKycImg(criminalData.case_image_url || ""); 
+        setTransactionType("U"); 
+        setCriminalCode(criminalData.component_case_code || 0); 
+        setPreview(criminalData.case_image_url || "");
+      } else {
+        // Reset the fields if no data found
+        setKycNo("");
+        setKycImg("");
+        setTransactionType("I");
+        setCriminalCode(0);
+        setPreview("");
+      }
+    } catch (err) {
+      console.error("Error fetching data:", err);
+    }
+  };
+  
 
   useEffect(() => {
 
-    const fetchData = async () => {
-      try {
-        const response = await axios.post(API_ENDPOINTS.verificationComponentCaseList, {
-          verificationCode: localStorage.getItem("vrfCode"),
-          componentCode: 6,
-        });
-       if(response.status==200 ){
-debugger;
-        if(response.data.length>0){
-            setKycNo(response.data[0].candidate_criminal_aadhar);
-            setKycImg(response.data[0].case_image_url);
-            setTransactionType("U");
-            setCriminalCode(response.data[0].component_case_code);
-            setPreview(response.data[0].case_image_url);
-    
-
-        }else{
-            set
-            setKycNo("");
-            setKycImg("");
-            setTransactionType("I");
-            setCriminalCode(0);
-            setPreview("");
-        }
-         }
-
-      } catch (err) {
-        console.log(err);
-      }
-    };
+ 
 
     fetchData();
-  }, [fetch]);
+  }, [ fetch]);
 
   const handleRemove = async () => {
     const response = await axios.post(API_ENDPOINTS.serviceCriminal, {
@@ -188,7 +194,8 @@ debugger;
         adhaarImage: " + fileExtension",
     });
     console.log(response);
-    setFetch(fetch + 1);
+
+    fetchData();
     GetTotalPricing();
     showPopup({ title: "KYC Removed Successfully", msg: "", iconType: "success" });
   }
@@ -198,17 +205,14 @@ debugger;
     <div>
       <Accordion defaultActiveKey="0" alwaysOpen>
         <Accordion.Item eventKey="0">
-          <Accordion.Header>Upload KYC Data</Accordion.Header>
+          <Accordion.Header>Upload Aadhaar Data</Accordion.Header>
           <Accordion.Body>
-            <p>
-              <span className="text-danger">NB:</span> Upload any one of the
-              following documents.
-            </p>
+           
             <Row>
     
               <Col lg={6} md={6} sm={12}>
                 <Form.Group>
-                  <Form.Label>ID Number</Form.Label>
+                  <Form.Label>Aadhaar Number</Form.Label>
                   <Form.Control
                     type="text"
                     placeholder="Enter ID Number"
@@ -247,17 +251,18 @@ debugger;
                   ) : (
                     <p>{kycImg?.name || "Preview available"}</p>
                   )}
+                  {transactionType==="U" &&<> <span className="fw-bold text-danger">Uploaded Image</span>  <br/> <img height={300}  className=" img-fluid" src={kycImg}/></> }
                 </Col>
               </Row>
             )}
             <Row className="mt-3">
               <Col>
                 <Button variant="primary" onClick={handleClick}>
-                 {transactionType==="U" ? ("Update"): ("Submit") }   
+                 {transactionType==="U" ? ("Update"):( <> {uploading ?  ( <> <Spinner/> "Uploading Image..."</> ):"Submit" } </> ) }   
                 </Button>
   {transactionType==="U"  && 
                 <Button variant="danger"  className="ms-2" onClick={handleRemove}>
-               ("Delete")    
+               Delete   
                 </Button>}
               </Col>
             </Row>
@@ -267,7 +272,7 @@ debugger;
         </Accordion.Item>
       </Accordion>
       {filePath && (
-        <div className="mt-3">
+        <div className="mt-3 d-none ">
           <strong>File Path:</strong> {filePath}<br></br>
           <strong>Image Url:</strong> {imageUrl}
         </div>

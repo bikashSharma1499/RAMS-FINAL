@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { Card, Row, Col, Form, Button, Badge, Spinner } from "react-bootstrap";
+import { Card, Row, Col, Form, Button, Badge, Spinner,Container, Table  } from "react-bootstrap";
 import Pageheader from "../../components/pageheader/pageheader";
 import { API_ENDPOINTS } from "../../utils/apiConfig";
 import ComponentKYC from "./cmptKYC";
@@ -39,6 +39,8 @@ const VerificationForm = () => {
   const [deleteStatus,setDeleteStatus] = useState(false);
   const [tcomp,setTcomp] = useState(0);
   const[tprice,setTprice] = useState(0);
+  const [billingData, setBillingData] = useState([]);
+  const [gstAmount, setGstAmount] = useState(0);
 
   const navigate = useNavigate();
   useEffect(() => {
@@ -273,26 +275,18 @@ const VerificationForm = () => {
   
   const handlePayment = () => {
     if (tprice > 0) {
-      if (count && count !== "0") {
+  
         showPopup({
           title: "Components Saved",
           msg: "Redirecting you to payment page ",
           iconType: "success",
         });
-        localStorage.removeItem("vrfCandidate");
-        localStorage.removeItem("vrfCode");
-        localStorage.removeItem("vrfCount");
+        finalBilling();
         setTimeout(() => {
           setPaymentPage(true);
 
         }, 1200);
-      } else {
-        showPopup({
-          title: "Components are not Saved",
-          msg: "Fill Components Details ",
-          iconType: "error",
-        });
-      }
+     
     } else {
       showPopup({
         title: "No Components",
@@ -302,11 +296,19 @@ const VerificationForm = () => {
     }
   };
 
-  const handleCheckout = () => {
+  const handleCheckout = async () => {
     event.preventDefault();
+    const vcode = localStorage.getItem('vrfCode');
+    const response=  await axios.post(API_ENDPOINTS.verificationPaymentUpdate,
+      {
+        verificationCode:vcode,
+        amount:totalAmount,
+        transactionID:"TXN1230"
+      }
+     )
     showPopup({
       title: "Successfull",
-      msg: "Your Payment Was Successfull",
+      msg: response.data,
       iconType: "success",
     });
     setTimeout(() => {
@@ -466,6 +468,24 @@ const VerificationForm = () => {
     setTcomp(response.data[0].total_component);
     setTprice(response.data[0].total_amount);
   }
+
+  const finalBilling = async () => {
+    const vcode = localStorage.getItem('vrfCode');
+    const response = await axios.post(API_ENDPOINTS.verificationComponentCaseList, {
+      verificationCode: vcode,
+      componentCode: 0,
+    });
+  
+    if (response.data) {
+      const data = response.data;
+      setBillingData(data);
+      
+      const subtotal = data.reduce((sum, item) => sum + item.verification_amount, 0);
+      const gst = subtotal * 0.18;
+      setGstAmount(gst);
+      setTotalAmount(subtotal + gst);
+    }
+  };
 
 
   return (
@@ -820,121 +840,74 @@ const VerificationForm = () => {
 
       <>
         {paymentPage && (
-          <Row className="justify-content-center">
-            <Col lg={4} md={8} sm={12}>
-              <Card className="shadow border-0">
-                <Card.Body>
-                
+    <Container>
+    <Row className="justify-content-center">
+      {/* Billing Summary */}
+      <Col lg={6} md={12} className="mb-4">
+        <Card className="shadow border-0">
+          <Card.Body>
+            <h3 className="text-center mb-3">Billing Summary</h3>
+            <Table striped bordered hover>
+              <thead>
+                <tr>
+                  <th>Component Case ID</th>
+                  <th>Component Name</th>
+                  <th>Verification Amount</th>
+                </tr>
+              </thead>
+              <tbody>
+                {billingData.map((item) => (
+                  <tr key={item.component_case_id}>
+                    <td>{item.component_case_id}</td>
+                    <td>{item.component_name}</td>
+                    <td>₹ {item.verification_amount.toFixed(2)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </Table>
+            <h6 className="text-end">Subtotal: ₹ {totalAmount - gstAmount}</h6>
+            <h6 className="text-end">GST (18%): ₹ {gstAmount.toFixed(2)}</h6>
+            <h6 className="text-end">Total Amount: ₹ {totalAmount.toFixed(2)}</h6>
+          </Card.Body>
+        </Card>
+      </Col>
 
-                  {/* Header Section */}
-                  <h5 className="text-center mb-4">
-                    Enter Card Details and Pay
-                  </h5>
-
-                  {/* Payment Details Section */}
-                  <div className="text-center mb-4">
-                    <h5 className="text-muted">Paying to Redchek PVT LTD</h5>
-                    <div className="d-flex justify-content-center align-items-center mb-3">
-                      <span>Purpose of Payment</span>
-                      <span className="mx-2 text-primary">Instapay</span>
-                    </div>
-                    <div className="d-flex justify-content-center align-items-center">
-                      <span>Amount</span>
-                      <span className="mx-2">₹ 469</span>
-                    </div>
-                  </div>
-
-                  {/* Card Payment Form */}
-                  <form onSubmit={handleCheckout}>
-                    {/* Card Number */}
-                    <div className="mb-4">
-                      <label htmlFor="cardNumber" className="form-label">
-                        Card Number
-                      </label>
-                      <input
-                        type="text"
-                        id="cardNumber"
-                        className="form-control"
-                        placeholder="Card Number"
-                      />
-                    </div>
-
-                    {/* Expiry Date and CVV */}
-                    <div className="row">
-                      <div className="col-md-6 mb-3">
-                        <label htmlFor="expiry" className="form-label">
-                          Expiry
-                        </label>
-                        <input
-                          type="text"
-                          id="expiry"
-                          className="form-control"
-                          placeholder="MM/YY"
-                        />
-                      </div>
-                      <div className="col-md-6 mb-3">
-                        <label htmlFor="cvv" className="form-label">
-                          CVV
-                        </label>
-                        <input
-                          type="text"
-                          id="cvv"
-                          className="form-control"
-                          placeholder="CVV"
-                        />
-                      </div>
-                    </div>
-
-                    {/* Payment Button */}
-                    <div className="text-center mb-4">
-                      <button
-                        type="submit"
-                        className="btn btn-success btn-lg w-100"
-                      >
-                        {" "}
-                        ₹ 469
-                      </button>
-                    </div>
-                  </form>
-
-                  {/* Terms & Conditions Section */}
-                  <div className="text-center">
-                    <a href="#" className="text-muted">
-                      Terms of Service and Refund Policy
-                    </a>
-                  </div>
-
-                  {/* Footer with Payment Method Logos */}
-                  <div className="text-center mt-4">
-                    <img
-                      src="https://www.redcheckes.com/pay/mc.png"
-                      height={20}
-                      alt="Mastercard"
-                      className="mx-2"
-                    />
-                    <img
-                      src="https://www.redcheckes.com/pay/rp.png"
-                      height={20}
-                      alt="RuPay"
-                      className="mx-2"
-                    />
-                    <img
-                      src="https://www.redcheckes.com/pay/visa.png"
-                      height={20}
-                      alt="Visa"
-                      className="mx-2"
-                    />
-                    <img
-                      src="https://www.redcheckes.com/pay/upi.png"
-                      height={20}
-                      alt="UPI"
-                      className="mx-2"
-                    />
-                  </div>
-                </Card.Body>
-              </Card>
-            </Col>
-          </Row>
+      {/* Payment Section */}
+      <Col lg={6} md={12}>
+        <Card className="shadow border-0">
+          <Card.Body>
+            <h5 className="text-center mb-4">Enter Card Details and Pay</h5>
+            <form onSubmit={handleCheckout}>
+              <div className="mb-3">
+                <label htmlFor="cardNumber" className="form-label">Card Number</label>
+                <input type="text" id="cardNumber" className="form-control" placeholder="Card Number" />
+              </div>
+              <Row>
+                <Col md={6} className="mb-3">
+                  <label htmlFor="expiry" className="form-label">Expiry</label>
+                  <input type="text" id="expiry" className="form-control" placeholder="MM/YY" />
+                </Col>
+                <Col md={6} className="mb-3">
+                  <label htmlFor="cvv" className="form-label">CVV</label>
+                  <input type="text" id="cvv" className="form-control" placeholder="CVV" />
+                </Col>
+              </Row>
+              <button type="submit" className="btn btn-success btn-lg w-100">Pay ₹ {totalAmount.toFixed(2)}</button>
+            </form>
+            <div className="text-center mt-3">
+              <a href="#" className="text-muted">Terms of Service and Refund Policy</a>
+            </div>
+            <div className="text-center mt-4">
+              <img src="https://www.redcheckes.com/pay/mc.png" height={20} alt="Mastercard" className="mx-2" />
+              <img src="https://www.redcheckes.com/pay/rp.png" height={20} alt="RuPay" className="mx-2" />
+              <img src="https://www.redcheckes.com/pay/visa.png" height={20} alt="Visa" className="mx-2" />
+              <img src="https://www.redcheckes.com/pay/upi.png" height={20} alt="UPI" className="mx-2" />
+            </div>
+          </Card.Body>
+        </Card>
+      </Col>
+    </Row>
+  </Container>
         )}
       </>
     </>

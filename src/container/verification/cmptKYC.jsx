@@ -203,6 +203,10 @@ const ComponentKYC = ({ GetTotalPricing }) => {
     });
     console.log(response);
     setFetch(fetch + 1);
+    setFile(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = ""; // Reset file input
+    }
     GetTotalPricing();
     showPopup({ title: "KYC Removed Successfully", msg: "", iconType: "success" });
   }
@@ -309,7 +313,7 @@ const ComponentKYC = ({ GetTotalPricing }) => {
         </Accordion.Item>
       </Accordion>
       {filePath && (
-        <div className="mt-3">
+        <div className="mt-3 d-none">
           <strong>File Path:</strong> {filePath}<br></br>
           <strong>Image Url:</strong> {imageUrl}
         </div>

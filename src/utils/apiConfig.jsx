@@ -48,7 +48,7 @@ export const API_ENDPOINTS = {
   verificationTotalPrice: BASE_URL+"Service/VerificationPricingTotal",
 
   verificationComponentCaseList: BASE_URL+"Service/VerificationComponentCaseList",
-
+ verificationPaymentUpdate: BASE_URL+"Service/VerificationPaymentUpdate",
 
   CustomerNewRegistration:BASE_URL+"User/CustomerRegistration",
   Customerdata:BASE_URL+"User/CustomerSelfList",
