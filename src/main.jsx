@@ -15,7 +15,7 @@ import Signup from "./container/auth/signup.jsx";
 import handleLogOut from "./container/auth/logout.jsx";
 /*Rent Agreement*/
 
-import NewAgreement from "./container/agreement/newAgreement.jsx";
+import NewAgreement from "./container/agreement/newagreement.jsx";
 import RentAgreementActive from "./container/agreement/agrActiveList.jsx";
 import LegalityProcess from "./container/agreement/agrLegalityProcess.jsx";
 /*Property*/

@@ -40,11 +40,12 @@ const RentAgreementActive = () => {
   };
 
   const handleAgreementAction = (code, type) => {
+
     if (type.toLowerCase() === "stamp agreement") {
       sessionStorage.setItem("signStatus", "True");
     }
     sessionStorage.setItem("agcCode", code);
-    setShowAgreementPrint(false);
+    setShowAgreementPrint(true);
   };
 
   // Fetch data on component mount

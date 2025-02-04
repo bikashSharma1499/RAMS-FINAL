@@ -10,7 +10,7 @@ import "../../assets/css/agreement.css";
 
 const LeaseDeed = () => {
   const [agreementData, setAgreementData] = useState(null);
-  const [leaseData, setLeaseData] = useState(null);
+  const [leaseData, setLeaseData] = useState(0);
   const [invitees, setInvitees] = useState([]);
   const location = useLocation();
   const queryParams = new URLSearchParams(location.search);
@@ -19,6 +19,7 @@ const LeaseDeed = () => {
   const [response, setLeegalityResponse] = useState(null);
 
   useEffect(() => {
+
     const fetchData = async () => {
         const code = sessionStorage.getItem('agcCode');
         if (code) {
@@ -51,16 +52,16 @@ const LeaseDeed = () => {
     }
   }
   useEffect(() => {
-    setTimeout(() => {
+
         if (agreementCode) {
             fetchAgreementData();
           }
-    }, 1200);
   
   }, [agreementCode]);
 
   const fetchLeaseData = async () => {
     try {
+ 
       const response = await axios.post(API_ENDPOINTS.agreementSecondPartyList, {
         agreementCode: agreementCode,
       });
@@ -72,7 +73,7 @@ const LeaseDeed = () => {
           email: lease.mail, 
           phone: lease.mobile 
         }));
-
+        console.log(leaseData);
         setInvitees(prevInvitees => [...prevInvitees, ...addInviteesList]);
      }
     } catch (error) {
@@ -81,9 +82,12 @@ const LeaseDeed = () => {
   };
 
   useEffect(() => {
-    if (agreementCode) {
-      fetchLeaseData();
-    }
+
+      if (agreementCode) {
+        console.log('Lease data '+agreementCode);
+        fetchLeaseData();
+      }
+  
   }, [agreementCode]);
 
   const generatePDF = async () => {
@@ -218,6 +222,7 @@ const LeaseDeed = () => {
 
   const agrmnt = agreementData[0];
   const lease = leaseData[0];
+
 
   return (
     <div className='legal'>
