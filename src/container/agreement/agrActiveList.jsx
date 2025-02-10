@@ -156,6 +156,10 @@ const RentAgreementActive = () => {
       {!showAgreementPrint ? (
         <>
           <Pageheader title="Agreement List" heading="Agreement" active="Agreement List" />
+          <br />
+          <div className="d-flex justify-content-start mb-2">
+          
+          </div>
           <div className="d-flex justify-content-between align-items-center mb-4">
             <div className="search-box">
               <input
@@ -166,6 +170,9 @@ const RentAgreementActive = () => {
                 onChange={(e) => setSearchList(e.target.value)}
                 style={{ maxWidth: "300px" }}
               />
+            </div>
+            <div>
+            <Button>Active</Button> <Button className="ms-2">Close</Button>
             </div>
           </div>
 

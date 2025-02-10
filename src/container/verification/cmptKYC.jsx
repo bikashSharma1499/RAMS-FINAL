@@ -203,7 +203,7 @@ const ComponentKYC = ({ GetTotalPricing }) => {
     });
     console.log(response);
     setFetch(fetch + 1);
-    setFile(null);
+    setFilePath(null);
     if (fileInputRef.current) {
       fileInputRef.current.value = ""; // Reset file input
     }

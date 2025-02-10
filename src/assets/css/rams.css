@@ -627,3 +627,8 @@ box-shadow: 2px 2px green;
   background-color: #bcbc07;
   color: white;
 }
+
+.table-billing th, td{
+  padding: 10px !important;
+  line-height: 1 !important;
+}

@@ -34,10 +34,11 @@ function ComponentAddress({GetTotalPricing}) {
   const [addressCode, setAddressCode] = useState(0);
   const [fetch, setFetch] = useState(0);
   const [errors, setErrors] = useState({});
-
+ const[loading, setLoading] = useState(false);  
   const verificationCode = localStorage.getItem("vrfCode"); // Example verification code (can be dynamic)
 
   useEffect(() => {
+
     const loadAddressTypes = async () => {
       try {
         const response = await axios.post(
@@ -122,9 +123,6 @@ function ComponentAddress({GetTotalPricing}) {
           i_city: parsedData.city,
           i_pin_code: parsedData.pinCode,
         };
-
-      
-
         updatedAddress.i_location = constructLocation(
           updatedAddress.i_main_address,
           updatedAddress.i_address
@@ -182,15 +180,19 @@ function ComponentAddress({GetTotalPricing}) {
     }
     if(!addressDetails.i_pin_code.trim()){
       newErrors.i_pin_code = "Pin code is required.";
+    }else if(addressDetails.i_pin_code.length !== 6){
+      newErrors.i_pin_code = "Pin code must be 6 digits.";
     }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0; 
   };
 
   const handleSubmit = async () => {
+    debugger;
     if(transactionType!=="D"){
    if(!validateFields()){ return; }
     }
+    setLoading(true);
     try {
       const vrf = JSON.parse(localStorage.getItem("vrfCandidate"));
       const response = await axios.post(API_ENDPOINTS.serviceAddress, {
@@ -229,6 +231,7 @@ function ComponentAddress({GetTotalPricing}) {
     } catch (error) {
       console.error("Error submitting address:", error);
     }
+    setLoading(false);  
   };
 
   const handleEdit = (address) => {
@@ -240,6 +243,7 @@ function ComponentAddress({GetTotalPricing}) {
   };
 
   const resetForm = () => {
+    inputRef.current.value = "";
     setAddressDetails({
       i_main_address: "",
       i_address: "",
@@ -254,23 +258,43 @@ function ComponentAddress({GetTotalPricing}) {
   };
 
   const handleRemove = (addressCode) => {
-    //debugger;
-    setTransactionType("D");
+
+    Swal.fire({
+      title: 'Are you sure?',
+      text: `You are about to ${action}`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: `Yes, ${action} it!`,
+      cancelButtonText: 'No, cancel!',
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        try {
+          setTransactionType("D");
     setAddressCode(addressCode);
     if (transactionType === "D" && addressCode !== "0") {
       handleSubmit();
       setFetch(fetch + 1);
     }
+        } catch (err) {
+          Swal.fire('Error', `Failed to ${action.toLowerCase()} the property. Please try again.`, 'error');
+        }
+      }
+    });
+
+
+
+    //debugger;
+   
   };
 
   return (
     <>
       <Accordion defaultActiveKey={["0"]} alwaysOpen>
         <Accordion.Item eventKey="0">
-          <Accordion.Header>Address Verification</Accordion.Header>
+         
           <Accordion.Body>
             <Row>
-              <Col xl={3} lg={4} md={6} sm={6}>
+              <Col lg={3} md={4}>
                 <Form.Group>
                   <Form.Label>Address Type</Form.Label>
                   <Select
@@ -283,7 +307,7 @@ function ComponentAddress({GetTotalPricing}) {
                 </Form.Group>
               </Col>
 
-              <Col xl={3} lg={4} md={6} sm={6}>
+              <Col  lg={9} md={8}>
                 <Form.Group>
                   <Form.Label>Search Location</Form.Label>
                   <Form.Control
@@ -295,16 +319,16 @@ function ComponentAddress({GetTotalPricing}) {
                 </Form.Group>
               </Col>
 
-              <Col xl={3} lg={4} md={6} sm={6}>
+              <Col lg={3} md={4}>
                 <Form.Group>
-                  <Form.Label>Main Address</Form.Label>
+                  <Form.Label>Plot No/Lane/Street</Form.Label>
                   <Form.Control
                     type="text"
                     value={addressDetails.i_main_address}
                     onChange={(e) =>
                       setAddressDetails((prevState) => ({
                         ...prevState,
-                        i_main_address: e.target.value,
+                        i_main_address: e.target.value
                       }))
                     }
                     placeholder="Enter main address"
@@ -313,7 +337,7 @@ function ComponentAddress({GetTotalPricing}) {
                 </Form.Group>
               </Col>
 
-              <Col xl={3} lg={4} md={6} sm={6}>
+              <Col lg={9} md={8}>
                 <Form.Group>
                   <Form.Label>Full Address</Form.Label>
                   <Form.Control
@@ -326,7 +350,7 @@ function ComponentAddress({GetTotalPricing}) {
                 </Form.Group>
               </Col>
 
-              <Col xl={3} lg={4} md={6} sm={6}>
+              <Col xl={4} lg={4} md={6}>
                 <Form.Group>
                   <Form.Label>City</Form.Label>
                   <Form.Control
@@ -339,7 +363,7 @@ function ComponentAddress({GetTotalPricing}) {
                 </Form.Group>
               </Col>
 
-              <Col xl={3} lg={4} md={6} sm={6}>
+              <Col xl={4} lg={4} md={6}>
                 <Form.Group>
                   <Form.Label>State</Form.Label>
                   <Form.Control
@@ -352,12 +376,12 @@ function ComponentAddress({GetTotalPricing}) {
                 </Form.Group>
               </Col>
 
-              <Col xl={3} lg={4} md={6} sm={6}>
+              <Col xl={4} lg={4} md={6}>
                 <Form.Group>
                   <Form.Label>Pin Code</Form.Label>
                   <Form.Control
                     type="text"
-                    maxLength={7}
+                    maxLength={6}
                     value={addressDetails.i_pin_code}
                     onChange={(e) => {
                       const value = e.target.value.replace(/[^0-9]/g, ""); // Allow only numeric values
@@ -374,18 +398,16 @@ function ComponentAddress({GetTotalPricing}) {
               </Col>
             </Row>
             <br />
-            <Button onClick={handleSubmit}>Submit Address</Button>
+            <button className="btn-save" onClick={handleSubmit}> {loading ? ("Processing...") : ("Submit")}</button>
             <hr />
             <div className=" table-responsive">
               <Table striped bordered hover>
                 <thead>
                   <tr>
                     <th>Address Type</th>
-                    <th>Location</th>
+                  
                     <th>Address</th>
-                    <th>State</th>
-                    <th>City</th>
-                    <th>Pincode</th>
+                    
                     <th>Action</th>
                   </tr>
                 </thead>
@@ -399,11 +421,7 @@ function ComponentAddress({GetTotalPricing}) {
                           ? "Unknown"
                           : address.type_name || "Unknown"}
                       </td>
-                      <td>{address.location_name}</td>
-                      <td>{address.address}</td>
-                      <td>{address.state_name}</td>
-                      <td>{address.city_name}</td>
-                      <td>{address.pincode}</td>
+                      <td>{address.complete_address}</td>
                       <td>
                         <Button
                           className=""
@@ -412,7 +430,7 @@ function ComponentAddress({GetTotalPricing}) {
                             handleRemove(address.address_code); // Pass addressCode as argument
                           }}
                         >
-                          <FaRecycle />
+                          <span className="text-white w-bold" >X</span>
                         </Button>
                       </td>
                     </tr>

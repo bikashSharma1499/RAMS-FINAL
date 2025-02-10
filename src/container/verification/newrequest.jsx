@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { Card, Row, Col, Form, Button, Badge, Spinner,Container, Table  } from "react-bootstrap";
+import { Card, Row, Col, Form, Button, Badge, Spinner, Container, Table } from "react-bootstrap";
 import Pageheader from "../../components/pageheader/pageheader";
 import { API_ENDPOINTS } from "../../utils/apiConfig";
 import ComponentKYC from "./cmptKYC";
@@ -36,10 +36,11 @@ const VerificationForm = () => {
   const [showList, setShowList] = useState(true);
   const [data, setData] = useState([]);
   const [submitLoading, setSubmitLoading] = useState(false);
-  const [deleteStatus,setDeleteStatus] = useState(false);
-  const [tcomp,setTcomp] = useState(0);
-  const[tprice,setTprice] = useState(0);
+  const [deleteStatus, setDeleteStatus] = useState(false);
+
   const [billingData, setBillingData] = useState([]);
+  const [billinfo, setBillinfo] = useState({});
+
   const [gstAmount, setGstAmount] = useState(0);
 
   const navigate = useNavigate();
@@ -60,7 +61,7 @@ const VerificationForm = () => {
   const handleServiceSelection = (service) => {
     setSelectedService(service);
     setSelectedServiceCode(service.service_code);
-  
+
     // First API call
     axios
       .post(API_ENDPOINTS.serviceComponentList, {
@@ -70,20 +71,20 @@ const VerificationForm = () => {
       })
       .then((response) => {
         setComponents(response.data);
-  
+
         const user = GetLoginInfo();
         const payload = {
           customerCode: user.userKey,
           serviceCode: service.service_code,
         };
-  
+
         // Second API call
         return axios.post(API_ENDPOINTS.serviceNewRequest, payload);
       })
       .then((response) => {
         if (response.data && response.status === 200 && response.data.result) {
           const resultArray = response.data.result.split(",");
-  
+
           const verificationCode = resultArray[1];
           if (resultArray[0] === "Old") {
             setCandidateDetails((prevDetails) => ({
@@ -92,11 +93,11 @@ const VerificationForm = () => {
               cndMobile: resultArray[3],
               cndMail: resultArray[4],
             }));
-            if(resultArray[2] !='' && resultArray[3]!=''){
+            if (resultArray[2] != '' && resultArray[3] != '') {
               setDeleteStatus(true);
             }
           }
-  
+
           console.log("Service request successful:", verificationCode);
           console.log(resultArray);
           localStorage.setItem("vrfCode", verificationCode);
@@ -108,8 +109,8 @@ const VerificationForm = () => {
         console.error("Error:", error);
       });
   };
-  
-  
+
+
   const handleComponentSelect = (comp) => {
     //debugger;
     // alert(comp);
@@ -146,13 +147,13 @@ const VerificationForm = () => {
   const renderFormComponent = (component) => {
     switch (component.component_code) {
       case 1:
-        return <ComponentKYC  GetTotalPricing={GetTotalPricing}  key={component.component_code} />;
+        return <ComponentKYC GetTotalPricing={GetTotalPricing} key={component.component_code} />;
       case 2:
-        return <ComponentReference GetTotalPricing={GetTotalPricing}  key={component.component_code} />;
+        return <ComponentReference GetTotalPricing={GetTotalPricing} key={component.component_code} />;
       case 3:
-        return <ComponentAddress GetTotalPricing={GetTotalPricing}  key={component.component_code} />;
+        return <ComponentAddress GetTotalPricing={GetTotalPricing} key={component.component_code} />;
       case 6:
-        return <ComponentCriminal GetTotalPricing={GetTotalPricing}  key={component.component_code} />;
+        return <ComponentCriminal GetTotalPricing={GetTotalPricing} key={component.component_code} />;
       default:
         return (
           <div key={component.component_code}>
@@ -203,18 +204,18 @@ const VerificationForm = () => {
   };
 
   const handleBasicDetailsSubmit = async () => {
-  //  debugger;
+    //  debugger;
     if (validate()) {
       setSubmitLoading(true);
       try {
         const user = GetLoginInfo();
-  
+
         if (!user || !user.userKey) {
           alert("User not logged in. Please log in and try again.");
           return;
         }
-        
-        const verificationCode=localStorage.getItem("vrfCode");
+
+        const verificationCode = localStorage.getItem("vrfCode");
 
         if (candidateDetails && candidateDetails.cndName) {
           const candidatePayload = {
@@ -223,15 +224,15 @@ const VerificationForm = () => {
             mobileNumber: candidateDetails.cndMobile,
             emailID: candidateDetails.cndMail,
           };
-  
+
           console.log("Candidate Payload:", candidatePayload);
-  
+
           try {
             const responseCandidate = await axios.post(
               API_ENDPOINTS.seriveCandidateDetailsAdd,
               candidatePayload
             );
-  
+
             if (responseCandidate.data && responseCandidate.status === 200) {
               console.log("API Response:", responseCandidate.data);
               showPopup({
@@ -239,19 +240,19 @@ const VerificationForm = () => {
                 msg: "Candidate Details Saved Successfully",
                 iconType: "success",
               });
-  
+
               localStorage.setItem(
                 "vrfCandidate",
                 JSON.stringify(candidatePayload)
               );
               const count = localStorage.getItem("vrfCount");
               localStorage.setItem("vrfCount", count ? parseInt(count) + 1 : 1);
-  
+
               setTimeout(() => {
                 setBasicDetailsFilled(true);
               }, 1200);
               setDeleteStatus(false);
-              GetTotalPricing();
+              await GetTotalPricing();
             } else {
               console.error("API Response Error:", responseCandidate);
               throw new Error("Failed to save candidate details.");
@@ -272,21 +273,21 @@ const VerificationForm = () => {
       alert("Please fill in all required fields correctly before submitting.");
     }
   };
-  
+
   const handlePayment = () => {
     if (tprice > 0) {
-  
-        showPopup({
-          title: "Components Saved",
-          msg: "Redirecting you to payment page ",
-          iconType: "success",
-        });
-        finalBilling();
-        setTimeout(() => {
-          setPaymentPage(true);
 
-        }, 1200);
-     
+      showPopup({
+        title: "Components Saved",
+        msg: "Redirecting you to payment page ",
+        iconType: "success",
+      });
+      finalBilling();
+      setTimeout(() => {
+        setPaymentPage(true);
+
+      }, 1200);
+
     } else {
       showPopup({
         title: "No Components",
@@ -299,13 +300,13 @@ const VerificationForm = () => {
   const handleCheckout = async () => {
     event.preventDefault();
     const vcode = localStorage.getItem('vrfCode');
-    const response=  await axios.post(API_ENDPOINTS.verificationPaymentUpdate,
+    const response = await axios.post(API_ENDPOINTS.verificationPaymentUpdate,
       {
-        verificationCode:vcode,
-        amount:totalAmount,
-        transactionID:"TXN1230"
+        verificationCode: vcode,
+        amount: totalAmount,
+        transactionID: "TXN1230"
       }
-     )
+    )
     showPopup({
       title: "Successfull",
       msg: response.data,
@@ -431,14 +432,14 @@ const VerificationForm = () => {
   };
   //#endregion
 
-  const handleDeleteVerification= async ()=>{
-   const vcode = localStorage.getItem('vrfCode');
+  const handleDeleteVerification = async () => {
+    const vcode = localStorage.getItem('vrfCode');
     try {
       const response = await axios.post(API_ENDPOINTS.verificationDelete, {
         transactionType: "CASE",
         verificationCode: vcode
       });
-      if(response.status===200){
+      if (response.status === 200) {
         const resultArray = response.data.result.split(',');
         setCandidateDetails((prevDetails) => ({
           ...prevDetails,
@@ -447,45 +448,44 @@ const VerificationForm = () => {
           cndMail: "",
         }));
         setDeleteStatus(false);
-        localStorage.setItem('vrfCode',resultArray[1]);
-        showPopup({title:"",msg:resultArray[2],iconType:"success"});
+        localStorage.setItem('vrfCode', resultArray[1]);
+        showPopup({ title: "", msg: resultArray[2], iconType: "success" });
       }
-     
+
     } catch (error) {
       console.error("Error fetching data:", error);
     }
   }
 
   const changeService = () => {
-     setSelectedService(false)
-     setDeleteStatus(false)
+    setSelectedService(false)
+    setDeleteStatus(false)
   };
 
-  const GetTotalPricing = async ()=>{
-   // debugger;
-    const response = await axios.post(API_ENDPOINTS.verificationTotalPrice, {verificationCode: localStorage.getItem('vrfCode')});
-    console.log(response.data);
-    setTcomp(response.data[0].total_component);
-    setTprice(response.data[0].total_amount);
-  }
+  const GetTotalPricing = async () => {
+    try {
+      const billingRespone = await axios.post(API_ENDPOINTS.verificationBilling, {
+        verificationCode: localStorage.getItem("vrfCode"),
+        componentCode: 0,
+      });
 
-  const finalBilling = async () => {
-    const vcode = localStorage.getItem('vrfCode');
-    const response = await axios.post(API_ENDPOINTS.verificationComponentCaseList, {
-      verificationCode: vcode,
-      componentCode: 0,
-    });
-  
-    if (response.data) {
-      const data = response.data;
-      setBillingData(data);
-      
-      const subtotal = data.reduce((sum, item) => sum + item.verification_amount, 0);
-      const gst = subtotal * 0.18;
-      setGstAmount(gst);
-      setTotalAmount(subtotal + gst);
+      if (billingRespone.status === 200) {
+        setBillingData(billingRespone.data);
+      }
+
+      const response = await axios.post(API_ENDPOINTS.verificationTotalPrice, {
+        verificationCode: localStorage.getItem("vrfCode"),
+      });
+
+      if (response.status === 200) {
+        setBillinfo(response.data[0]);
+      }
+    } catch (error) {
+      console.error("Error fetching billing data:", error);
     }
   };
+
+
 
 
   return (
@@ -587,12 +587,12 @@ const VerificationForm = () => {
                       Candidate Basic Details
                     </div>
                     <div>
-                    
+
                     </div>
                   </Card.Header>
 
                   <Card.Body>
-                  {deleteStatus && <div className="alert alert-danger">Pending record found. Click Continue to proceed or Delete.</div>}
+                    {deleteStatus && <div className="alert alert-danger">Pending record found. Click Continue to proceed or Delete.</div>}
                     <Row>
                       <Col md={4} sm={6}>
                         <Form.Group>
@@ -666,13 +666,12 @@ const VerificationForm = () => {
                           <>
                             <button
                               disabled={submitLoading}
-                              className={`mt-2 ${
-                                basicDetailsFilled ? "btn-update" : "btn-save"
-                              }`}
+                              className={`mt-2 ${basicDetailsFilled ? "btn-update" : "btn-save"
+                                }`}
                               onClick={handleBasicDetailsSubmit}
                             >
                               {!submitLoading ? (<>
-                                { deleteStatus ? ("Continue") :  ("Submit") } </>
+                                {deleteStatus ? ("Continue") : ("Submit")} </>
                               ) : (
                                 <>
                                   <Spinner
@@ -685,8 +684,8 @@ const VerificationForm = () => {
                             </button>
 
                             {deleteStatus &&
-                            
-                            <><button className="btn btn-danger ms-2" onClick={handleDeleteVerification} >Delete Current Data</button></>
+
+                              <><button className="btn btn-danger ms-2" onClick={handleDeleteVerification} >Delete Current Data</button></>
                             }
                           </>
                         )}
@@ -695,7 +694,7 @@ const VerificationForm = () => {
                   </Card.Body>
                 </Card>
 
-                {basicDetailsFilled && !paymentPage  ? (
+                {basicDetailsFilled && !paymentPage ? (
                   <>
                     <Row>
                       <Col lg={8}>
@@ -707,11 +706,10 @@ const VerificationForm = () => {
                                 className="mb-4"
                               >
                                 <div
-                                  className={`p-3 rounded d-flex justify-content-between align-items-center ${
-                                    selectedComponents.includes(comp)
-                                      ? "bg-success text-white shadow-sm"
-                                      : "bg-light text-dark border"
-                                  }`}
+                                  className={`p-3 rounded d-flex justify-content-between align-items-center ${selectedComponents.includes(comp)
+                                    ? "bg-success text-white shadow-sm"
+                                    : "bg-light text-dark border"
+                                    }`}
                                   style={{ cursor: "pointer" }}
                                   onClick={() => handleComponentSelect(comp)}
                                 >
@@ -739,53 +737,83 @@ const VerificationForm = () => {
                       </Col>
                       <Col lg={4} >
 
-                      <Card className="shadow border-0">
-                    <Card.Header className="bg-dark text-white text-center fw-bold">
-                      Your Billing
-                    </Card.Header>
-                    <Card.Body>
-                      <div className="d-flex justify-content-between mb-3">
-                        <span className="text-secondary">
-                        {tcomp}
-                        </span>
-                        <span className="fw-bold">₹  {tprice}</span>
-                      </div>
-                      <div className="d-flex justify-content-between d-none mb-3">
-                        <span className="text-secondary">GST (18%)</span>
-                        <span className="fw-bold">₹ {totalGstAmt}</span>
-                      </div>
+                        <Card className="shadow border-0">
+                          <Card.Header className="bg-dark text-white text-center fw-bold">
+                            Your Billing
+                          </Card.Header>
+                          <Card.Body>
+                          <div className="row">
+                          <div className="col-12 ">
+                            <Table striped hover>
+                              <thead >
+                                <tr >
+                                  <th className=" bg-info text-white">Service</th>
+                                  <th className=" text-center bg-info text-white">Qty</th>
+                                  <th className=" bg-info text-white">Rate</th>
+                                  <th className=" bg-info text-white text-end">Amount</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {billingData.map((item) => (
+                                  <tr key={item.component_name}>
+                                    <td>{item.component_name}</td>
+                                    <td className="text-center" >{item.qnty}</td>
+                                    <td>₹ {item.rate}</td>
+                                    <td className="text-end">₹ {item.amount}</td>
+                                  </tr>
 
+                                ))}
+                              </tbody>
+                            </Table>
+                            </div>
+                            </div>
+                            <div className="row">
+                            <div className="offset-sm-4  col-sm-8 offset-md-5 col-md-7 offset-lg-5 col-lg-7">
+                              <Table className="table-billing">
+                                <tbody>
+                                  <tr>
+                                    <th>Gross Total</th>
+                                    <td className=" text-end" > ₹ {billinfo.amount}</td>
+                                  </tr>
+                                  <tr>
+                                    <th>{billinfo.tax_name} {billinfo.tax_rate}</th>
+                                    <td className=" text-end"> ₹ {billinfo.tax}</td>
+                                  </tr>
+                                  <tr>
+                                    <th> Net Amount</th>
+                                    <td className=" text-end"> ₹ {billinfo.net}</td>
+                                  </tr>
+                                  <tr>
+                                    <th>Round</th>
+                                    <td className=" text-end"> ₹ {billinfo.roundup}</td>
+                                  </tr>
+                                  <tr>
+                                    <th>Final</th>
+                                    <td className=" text-end fw-bolder text-danger"> ₹ {billinfo.total}</td>
+                                  </tr>
+                                </tbody>
+                              </Table>
+                           
+                            </div>
+                            
+                            </div>
+                          </Card.Body>
+                        </Card>
+                        <div className="d-flex justify-content-between mt-3">
+                          <button
 
-                      <div className="d-flex justify-content-between mb-3">
-                        
-                      </div>
+                            className="btn-cancel  w-50"
+                          >
+                            Cancel
+                          </button>
+                          <button
+                            onClick={handlePayment}
+                            className="btn-save w-50 ms-2"
+                          >
+                            Proceed
+                          </button>
+                        </div>
 
-                      <hr />
-                      <div className="d-flex d-none justify-content-between mb-3">
-                        <span className="fw-bold">Total</span>
-                        <span className="fw-bold text-success">
-                          ₹ {totalAmount}
-                        </span>
-                      </div>
-
-                   
-                    </Card.Body>
-                  </Card>
-                 <div className="d-flex justify-content-between mt-3">
-                  <button 
-                       
-                       className="btn-cancel  w-50"
-                     >
-                      Cancel
-                     </button>
-                     <button 
-                       onClick={handlePayment}
-                       className="btn-save w-50 ms-2"
-                     >
-                      Proceed
-                     </button>
-                     </div>
-                    
                       </Col>
                     </Row>
                   </>
@@ -840,74 +868,51 @@ const VerificationForm = () => {
 
       <>
         {paymentPage && (
-    <Container>
-    <Row className="justify-content-center">
-      {/* Billing Summary */}
-      <Col lg={6} md={12} className="mb-4">
-        <Card className="shadow border-0">
-          <Card.Body>
-            <h3 className="text-center mb-3">Billing Summary</h3>
-            <Table striped bordered hover>
-              <thead>
-                <tr>
-                  <th>Component Case ID</th>
-                  <th>Component Name</th>
-                  <th>Verification Amount</th>
-                </tr>
-              </thead>
-              <tbody>
-                {billingData.map((item) => (
-                  <tr key={item.component_case_id}>
-                    <td>{item.component_case_id}</td>
-                    <td>{item.component_name}</td>
-                    <td>₹ {item.verification_amount.toFixed(2)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </Table>
-            <h6 className="text-end">Subtotal: ₹ {totalAmount - gstAmount}</h6>
-            <h6 className="text-end">GST (18%): ₹ {gstAmount.toFixed(2)}</h6>
-            <h6 className="text-end">Total Amount: ₹ {totalAmount.toFixed(2)}</h6>
-          </Card.Body>
-        </Card>
-      </Col>
+          <Container>
+            <Row className="justify-content-center">
+              {/* Billing Summary */}
+              <Col lg={6} md={12} className="mb-4">
+                <Card className="shadow border-0">
 
-      {/* Payment Section */}
-      <Col lg={6} md={12}>
-        <Card className="shadow border-0">
-          <Card.Body>
-            <h5 className="text-center mb-4">Enter Card Details and Pay</h5>
-            <form onSubmit={handleCheckout}>
-              <div className="mb-3">
-                <label htmlFor="cardNumber" className="form-label">Card Number</label>
-                <input type="text" id="cardNumber" className="form-control" placeholder="Card Number" />
-              </div>
-              <Row>
-                <Col md={6} className="mb-3">
-                  <label htmlFor="expiry" className="form-label">Expiry</label>
-                  <input type="text" id="expiry" className="form-control" placeholder="MM/YY" />
-                </Col>
-                <Col md={6} className="mb-3">
-                  <label htmlFor="cvv" className="form-label">CVV</label>
-                  <input type="text" id="cvv" className="form-control" placeholder="CVV" />
-                </Col>
-              </Row>
-              <button type="submit" className="btn btn-success btn-lg w-100">Pay ₹ {totalAmount.toFixed(2)}</button>
-            </form>
-            <div className="text-center mt-3">
-              <a href="#" className="text-muted">Terms of Service and Refund Policy</a>
-            </div>
-            <div className="text-center mt-4">
-              <img src="https://www.redcheckes.com/pay/mc.png" height={20} alt="Mastercard" className="mx-2" />
-              <img src="https://www.redcheckes.com/pay/rp.png" height={20} alt="RuPay" className="mx-2" />
-              <img src="https://www.redcheckes.com/pay/visa.png" height={20} alt="Visa" className="mx-2" />
-              <img src="https://www.redcheckes.com/pay/upi.png" height={20} alt="UPI" className="mx-2" />
-            </div>
-          </Card.Body>
-        </Card>
-      </Col>
-    </Row>
-  </Container>
+                </Card>
+              </Col>
+
+              {/* Payment Section */}
+              <Col lg={6} md={12}>
+                <Card className="shadow border-0">
+                  <Card.Body>
+                    <h5 className="text-center mb-4">Enter Card Details and Pay</h5>
+                    <form onSubmit={handleCheckout}>
+                      <div className="mb-3">
+                        <label htmlFor="cardNumber" className="form-label">Card Number</label>
+                        <input type="text" id="cardNumber" className="form-control" placeholder="Card Number" />
+                      </div>
+                      <Row>
+                        <Col md={6} className="mb-3">
+                          <label htmlFor="expiry" className="form-label">Expiry</label>
+                          <input type="text" id="expiry" className="form-control" placeholder="MM/YY" />
+                        </Col>
+                        <Col md={6} className="mb-3">
+                          <label htmlFor="cvv" className="form-label">CVV</label>
+                          <input type="text" id="cvv" className="form-control" placeholder="CVV" />
+                        </Col>
+                      </Row>
+                      <button type="submit" className="btn btn-success btn-lg w-100">Pay ₹ {totalAmount.toFixed(2)}</button>
+                    </form>
+                    <div className="text-center mt-3">
+                      <a href="#" className="text-muted">Terms of Service and Refund Policy</a>
+                    </div>
+                    <div className="text-center mt-4">
+                      <img src="https://www.redcheckes.com/pay/mc.png" height={20} alt="Mastercard" className="mx-2" />
+                      <img src="https://www.redcheckes.com/pay/rp.png" height={20} alt="RuPay" className="mx-2" />
+                      <img src="https://www.redcheckes.com/pay/visa.png" height={20} alt="Visa" className="mx-2" />
+                      <img src="https://www.redcheckes.com/pay/upi.png" height={20} alt="UPI" className="mx-2" />
+                    </div>
+                  </Card.Body>
+                </Card>
+              </Col>
+            </Row>
+          </Container>
         )}
       </>
     </>

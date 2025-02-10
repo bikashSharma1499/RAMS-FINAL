@@ -8,27 +8,35 @@ import html2canvas from 'html2canvas';
 import { jsPDF } from "jspdf";
 import "../../assets/css/agreement.css";
 
-const LeaseDeed = () => {
+const LeaseDeed = () => { 
+  const [loading, setLoading] = useState(false);
   const [agreementData, setAgreementData] = useState(null);
-  const [leaseData, setLeaseData] = useState(0);
-  const [invitees, setInvitees] = useState([]);
+  const [leaseData, setLeaseData] = useState(null);
+  const [checkInvitees, setInvitees] = useState([]);
   const location = useLocation();
   const queryParams = new URLSearchParams(location.search);
-  const [agreementCode, setAgreementCode]= useState(null);
+  const [agreementCode, setAgreementCode] = useState(null);
   const legalRef = useRef(null);
   const [response, setLeegalityResponse] = useState(null);
+  const [sign, setSign] = useState(false);
 
   useEffect(() => {
+    const status = sessionStorage.getItem("signStatus");
+    if (status && status === "True") {
+      setSign(true);
+    }
+  }, []);
 
+  useEffect(() => {
     const fetchData = async () => {
-        const code = sessionStorage.getItem('agcCode');
-        if (code) {
-            setAgreementCode(code); // Pass the retrieved code to setAgreementCode
-        }
+      const code = sessionStorage.getItem('agcCode');
+      if (code) {
+        setAgreementCode(code); // Pass the retrieved code to setAgreementCode
+      }
     };
 
-    fetchData(); 
-}, [])
+    fetchData();
+  }, [])
 
   const fetchAgreementData = async () => {
     try {
@@ -38,59 +46,58 @@ const LeaseDeed = () => {
       console.log("API Response:", response.data);
       setAgreementData(response.data);
       if (response.data) {
-        const inviteesList = response.data.map(mainData => ({
-          name: mainData.first_party_name,  
-          email: mainData.first_party__mail, 
-          phone: mainData.first_party_mobile 
+        const firstList = response.data.map(firstParty => ({
+          name: firstParty.first_party_name,
+          email: firstParty.first_party__mail,
+          phone: firstParty.first_party_mobile
         }));
 
-        setInvitees(inviteesList);
-     }
+        setInvitees(firstList);
+      }
     }
     catch (error) {
       console.error('Error fetching Agreement data:', error);
     }
   }
-  useEffect(() => {
-
-        if (agreementCode) {
-            fetchAgreementData();
-          }
-  
-  }, [agreementCode]);
 
   const fetchLeaseData = async () => {
     try {
- 
       const response = await axios.post(API_ENDPOINTS.agreementSecondPartyList, {
         agreementCode: agreementCode,
       });
       console.log("API Response:", response.data);
       setLeaseData(response.data);
       if (response.data) {
-        const addInviteesList = response.data.map(lease => ({
-          name: lease.name,  
-          email: lease.mail, 
-          phone: lease.mobile 
+        setTimeout( () =>{
+        const addNewList = response.data.map(secondParty => ({
+          name: secondParty.name,
+          email: secondParty.mail,
+          phone: secondParty.mobile
         }));
-        console.log(leaseData);
-        setInvitees(prevInvitees => [...prevInvitees, ...addInviteesList]);
-     }
+
+        setInvitees(prevInvitees => [...prevInvitees, ...addNewList]);
+      }, 1800);
+      }
     } catch (error) {
       console.error('Error fetching lease deed data:', error);
     }
   };
 
-  useEffect(() => {
-
+  const fetchAllData = async () => {
+    setTimeout(() => {
       if (agreementCode) {
-        console.log('Lease data '+agreementCode);
+        fetchAgreementData();
         fetchLeaseData();
       }
-  
+    }, 1800);
+  };
+
+  useEffect(() => {
+    fetchAllData();
   }, [agreementCode]);
 
   const generatePDF = async () => {
+    setLoading(true);
     const inputElement = legalRef.current;
     const doc = new jsPDF({
       orientation: 'portrait',
@@ -134,23 +141,26 @@ const LeaseDeed = () => {
     for (const page of pages) {
       await capturePage(page);
     }
-
+      setLoading(false);
     doc.save('lease_deed.pdf');
+    setTimeout(() => {
+      window.location.href = '/agreement/list';
+    }, 800);
   };
 
   const signPDF = async () => {
+    setLoading(true);
     const inputElement = legalRef.current;
-  
     const doc = new jsPDF({
       orientation: 'portrait',
       unit: 'mm',
       format: 'a4',
     });
-  
+
     const pages = Array.from(inputElement.querySelectorAll('.p1, .pg'));
-  
+
     let pageIndex = 0;
-  
+
     const capturePage = (pageElement) => {
       return new Promise((resolve) => {
         html2canvas(pageElement, { scale: 5 }).then((canvas) => {
@@ -158,63 +168,66 @@ const LeaseDeed = () => {
           const pageHeight = 297;
           const imgWidth = 210;
           const imgHeight = (canvas.height * imgWidth) / canvas.width;
-  
+
           const pagesRequired = Math.ceil(imgHeight / pageHeight);
-  
+
           if (pageIndex === 0) {
             doc.addImage(imgData, 'JPEG', 0, 0, imgWidth, imgHeight);
           } else {
             doc.addPage();
             doc.addImage(imgData, 'JPEG', 0, 0, imgWidth, imgHeight);
           }
-  
+
           for (let i = 2; i < pagesRequired; i++) {
             doc.addPage();
             const offset = -i * pageHeight;
             doc.addImage(imgData, 'JPEG', 0, offset, imgWidth, imgHeight);
           }
-  
+
           pageIndex++;
           resolve();
         });
       });
     };
-  
+
     for (const page of pages) {
       await capturePage(page);
     }
-  
+    setLoading(false);
     const base64PDF = doc.output('datauristring').split(',')[1];
-    const code = sessionStorage.getItem('agcCode');
     const data = {
       profileId: "eU7YdoE",
       file: {
         name: "Leese-Deed",
-        file:  base64PDF 
+        file: base64PDF
       },
-      invitees: invitees,
-      irn : "A-" + code    
+      invitees: checkInvitees,
+      irn: "A-" + agreementCode,
+
     };
 
     const rawData = JSON.stringify(data);
-  console.log(rawData);
+    console.log(rawData);
     try {
       const response = await axios.post('https://api.redcheckes.com/proxy/sign-request', rawData, {
+       // const response = await axios.post('http://localhost:4001/proxy/sign-request', rawData, {
         headers: {
           'Content-Type': 'application/json',
         }
       });
-  
-      setLeegalityResponse(response.data); 
+
+      setLeegalityResponse(response.data);
       console.log(response.data);
-      alert('Please Check Your Email to get the Agreement Signed!');    
-        window.location.href = '/agreement/list';
+      alert('Please Check Your Email to get the Agreement Signed!');
+      window.location.href = '/agreement/list';
     } catch (error) {
       console.error('Error during the signing process:', error);
-      alert('There was an issue Uploading the Document. Please try again.'); 
+      alert('There was an issue Uploading the Document. Please try again.');
+    }
+    finally {
+      setLoading(false);
     }
   };
-
 
   if (!agreementData || agreementData.length === 0) {
     return <div>Loading...</div>;
@@ -223,10 +236,9 @@ const LeaseDeed = () => {
   const agrmnt = agreementData[0];
   const lease = leaseData[0];
 
-
-  return (
-    <div className='legal'>
-      <div ref={legalRef}>
+  return (   
+    <div className='legal'>   
+      <div ref={legalRef}> 
         <div className='p1'>
           <div className='stmp'>
             <h2>LEASE DEED</h2>
@@ -320,14 +332,15 @@ const LeaseDeed = () => {
           <p><strong>Additional Furnishings and Appliances Included</strong>:</p>
           <ul>
             <li><strong>Curtains</strong>: 4 sets of curtains for living room and bedroom windows.</li><li><strong>Kitchen Appliances</strong>: Microwave oven - 1, Refrigerator - 1.</li><li><strong>Living Room Furniture</strong>: Sofa set (3-seater) - 1, Coffee table - 1.</li><li><strong>Bathroom Fixtures</strong>: Shower curtain - 1, Bathroom mirror - 1.</li><li><strong>Lighting</strong>: Table lamps - 2, Standing lamp - 1.</li><li><strong>Air Conditioning Units</strong>: Air conditioners - 1 in the bedroom.</li><li><strong>Entertainment</strong>: Television - 1 (32 inches LED).</li><li><strong>Utilities</strong>: Water heater - 1, Washing machine - 1.</li></ul><p><strong>Condition and Maintenance</strong>:</p><ul><li>Each item is in good working condition and free from any significant damage at the time of lease commencement.</li><li>The LESSEE agrees to maintain the items in good working order and will notify the LESSOR(S) immediately of any malfunction or needed repairs.</li><li>Any damage or loss of these items, other than normal wear and tear, will be the responsibility of the LESSEE to repair or replace, subject to approval by the LESSOR(S).</li></ul><p><strong>Inventory Check and Verification</strong>:</p><ul><li>Upon taking possession of the leased premises, the LESSEE shall conduct a thorough inspection of all listed items together with the LESSOR(S) or their designated representative.</li><li>An inventory checklist will be signed by both the LESSEE and the LESSOR(S) as acknowledgment of the condition and quantity of items provided.</li><li>At the termination of the lease, a final inventory check will be conducted. Any discrepancies in the condition or number of items from the initial inventory may result in charges or deductions from the security deposit.</li></ul>
-        </div>
+        </div> 
       </div>
       <div className='text-center mt-2'>
-      <button  className="btn btn-primary btn-sm" onClick={generatePDF}>Download Agreement</button>
-      <button  className="btn btn-success btn-sm" onClick={signPDF}>Sign Agreement</button>
+        <button className="btn btn-primary btn-sm" onClick={generatePDF}>{loading ? 'Processing...' : 'Download Agreement'}</button>
+        {sign && (<button className="btn btn-success btn-sm" onClick={signPDF}>{loading ? 'Processing...' : 'Sign Agreement'}</button>)}
       </div>
+      {loading && <div className="loadingContainer"> <div className="loader"></div></div>}
     </div>
-  );
+    )
 };
 
 export default LeaseDeed;
